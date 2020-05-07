@@ -8,7 +8,10 @@
 #include <grid/src/index.hpp>
 #include <grid/src/meta.hpp>
 
-namespace Grid::Impl
+namespace Grid
+{
+
+namespace Impl
 {
 
 template <class dim_array_type, std::size_t rank_rest>
@@ -62,6 +65,7 @@ public:
         return ref.bracket(subscripts);
     }
 };
+}  // namespace Impl
 
 template <class T, std::size_t... N>
 struct multi_dim_array {
@@ -133,4 +137,4 @@ protected:
 };
 
 
-}  // namespace Grid::Impl
+}  // namespace Grid
