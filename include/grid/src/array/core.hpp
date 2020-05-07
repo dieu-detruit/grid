@@ -83,7 +83,7 @@ protected:
 public:
     friend struct array_square_bracket_result<this_type, 1>;
 
-    // iterator diverted from std::vector
+    // iterator diverted from std::array
     using iterator = typename std::array<T, whole_size>::iterator;
     using const_iterator = typename std::array<T, whole_size>::const_iterator;
 
