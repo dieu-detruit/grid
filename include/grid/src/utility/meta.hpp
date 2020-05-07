@@ -31,22 +31,17 @@ template <class... types>
 using get_max_size_type_t = typename get_max_size_type<types...>::type;
 
 // Get the Nth parameter
-template <class T, std::size_t n, T... params>
-struct get_nth_param {
-};
 template <class T, std::size_t n, T first, T... params>
-struct get_nth_param<T, n, first, params...> {
+struct get_nth_param {
+    static_assert(n < 1 + sizeof...(params), "out of range");
     static constexpr T value = get_nth_param<T, n - 1, params...>::value;
 };
-template <class T, std::size_t n, T last>
-struct get_nth_param<T, n, last> {
-    static_assert(n == 0, "out of range");
-    static constexpr T value = last;
-};
+
 template <class T, T first, T... params>
 struct get_nth_param<T, 0, first, params...> {
     static constexpr T value = first;
 };
+
 template <class T, std::size_t n, T... params>
 static constexpr T get_nth_param_v = get_nth_param<T, n, params...>::value;
 

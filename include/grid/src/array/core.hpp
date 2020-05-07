@@ -1,17 +1,13 @@
 #pragma once
 
 #include <array>
-#include <cstdarg>
 #include <tuple>
 #include <type_traits>
 
-#include <grid/src/index.hpp>
-#include <grid/src/meta.hpp>
+#include <grid/src/array/index.hpp>
+#include <grid/src/utility/meta.hpp>
 
-namespace Grid
-{
-
-namespace Impl
+namespace Grid::Impl
 {
 
 template <class dim_array_type, std::size_t rank_rest>
@@ -65,7 +61,6 @@ public:
         return ref.bracket(subscripts);
     }
 };
-}  // namespace Impl
 
 template <class T, std::size_t... N>
 struct multi_dim_array {
@@ -131,10 +126,8 @@ protected:
 
     inline T& bracket(std::array<std::size_t, rank> subscripts)
     {
-        return data[std::apply<std::size_t(func_arg_types<N>...), std::array<std::size_t, rank>>(
-            array_index<N...>::template index<std::size_t>, std::move(subscripts))];
+        return data[array_index<N...>::template index(subscripts)];
     }
 };
 
-
-}  // namespace Grid
+}  // namespace Grid::Impl
