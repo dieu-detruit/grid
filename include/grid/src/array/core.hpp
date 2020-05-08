@@ -11,7 +11,7 @@ namespace Grid::Impl
 {
 
 template <class dim_array_type, std::size_t rank_rest>
-class array_square_bracket_result
+class array_bracket_proxy
 {
     using sub_array_type = std::array<std::size_t, dim_array_type::rank>;
 
@@ -19,25 +19,29 @@ class array_square_bracket_result
     dim_array_type& ref;
 
 public:
-    array_square_bracket_result(dim_array_type& ref)
+    using value_type = typename dim_array_type::value_type;
+
+    array_bracket_proxy(dim_array_type& ref)
         : ref(ref), subscripts{} {}
 
-    array_square_bracket_result(dim_array_type& ref, sub_array_type& subscripts)
+    array_bracket_proxy(dim_array_type& ref, sub_array_type& subscripts)
         : ref(ref), subscripts(std::move(subscripts)) {}
 
-    array_square_bracket_result(array_square_bracket_result&& r)
+    array_bracket_proxy(const array_bracket_proxy& l)
+        : ref(l.ref), subscripts(l.subscripts) {}
+
+    array_bracket_proxy(array_bracket_proxy&& r)
         : ref(r.ref), subscripts(std::move(r.subscripts)) {}
 
-    template <class U>
-    auto operator[](U subscript)
+    auto operator[](std::size_t subscript)
     {
         subscripts.at(dim_array_type::rank - rank_rest) = subscript;
-        return array_square_bracket_result<dim_array_type, rank_rest - 1>{ref, subscripts};
+        return array_bracket_proxy<dim_array_type, rank_rest - 1>{ref, subscripts};
     }
 };
 
 template <class dim_array_type>
-class array_square_bracket_result<dim_array_type, 1>
+class array_bracket_proxy<dim_array_type, 1>
 {
     using sub_array_type = std::array<std::size_t, dim_array_type::rank>;
 
@@ -45,17 +49,22 @@ class array_square_bracket_result<dim_array_type, 1>
     dim_array_type& ref;
 
 public:
-    array_square_bracket_result(dim_array_type& ref)
+    using value_type = typename dim_array_type::value_type;
+
+    array_bracket_proxy(dim_array_type& ref)
         : ref(ref), subscripts{} {}
 
-    array_square_bracket_result(dim_array_type& ref, sub_array_type& subscripts)
+    array_bracket_proxy(dim_array_type& ref, sub_array_type& subscripts)
         : ref(ref), subscripts(subscripts) {}
 
-    array_square_bracket_result(array_square_bracket_result&& r)
+    array_bracket_proxy(const array_bracket_proxy& l)
+        : ref(l.ref), subscripts(l.subscripts) {}
+
+    array_bracket_proxy(array_bracket_proxy&& r)
         : ref(r.ref), subscripts(std::move(r.subscripts)) {}
 
-    template <class U>
-    typename dim_array_type::value_type& operator[](U subscript)
+
+    typename dim_array_type::value_type& operator[](std::size_t subscript)
     {
         subscripts.at(dim_array_type::rank - 1) = subscript;
         return ref.bracket(subscripts);
@@ -78,10 +87,10 @@ protected:
     using bracket_return_type = std::conditional_t<
         rank == 1,
         T&,
-        array_square_bracket_result<this_type, rank - 1>>;
+        array_bracket_proxy<this_type, rank - 1>>;
 
 public:
-    friend struct array_square_bracket_result<this_type, 1>;
+    friend struct array_bracket_proxy<this_type, 1>;
 
     // iterator diverted from std::array
     using iterator = typename std::array<T, whole_size>::iterator;
@@ -114,19 +123,21 @@ public:
     {
         static_assert(std::is_integral_v<U>, "The argument must be integral");
         if constexpr (rank == 1) {
-            return data[array_index<N...>::index(subscript)];
+            return data[subscript];
         } else {
-            return array_square_bracket_result<this_type, rank>{*this}[subscript];
+            return array_bracket_proxy<this_type, rank>{*this}[subscript];
         }
     }
 
-protected:
-    template <std::size_t n>
-    using func_arg_types = std::size_t;
+    inline void fill(T value)
+    {
+        data.fill(value);
+    }
 
+protected:
     inline T& bracket(std::array<std::size_t, rank> subscripts)
     {
-        return data[array_index<N...>::template index(subscripts)];
+        return data[array_index<N...>::index_ar(subscripts)];
     }
 };
 

@@ -39,8 +39,13 @@ public:
 public:
     static constexpr std::array<std::size_t, rank> coefs = array_index_coef_list<0>::value;
 
-    template <class T>
-    static inline std::size_t index(const std::array<T, rank>& subscript)
+    template <class... U>
+    static inline std::size_t index(U... subscript)
+    {
+        return index(std::array<std::size_t, rank>{subscript...});
+    }
+
+    static inline std::size_t index_ar(const std::array<std::size_t, rank>& subscript)
     {
         std::size_t result = 0;
         for (int i = 0; i < rank; ++i) {
@@ -50,25 +55,17 @@ public:
     }
 };
 
-template <std::size_t N0>
-struct array_index<N0> {
-public:
-    static constexpr std::size_t rank = 1;
-
-    template <class T>
-    static inline std::size_t index(const std::array<T, rank>& subscript)
-    {
-        return subscript[0];
-    }
-};
-
 template <std::size_t N0, std::size_t N1>
 struct array_index<N0, N1> {
 public:
     static constexpr std::size_t rank = 2;
 
-    template <class T>
-    static inline std::size_t index(const std::array<T, rank>& subscript)
+    template <class U0, class U1>
+    static inline std::size_t index(U0 sub0, U1 sub1)
+    {
+        return N1 * sub0 + sub1;
+    }
+    static inline std::size_t index_ar(const std::array<std::size_t, rank>& subscript)
     {
         return N1 * subscript[0] + subscript[1];
     }

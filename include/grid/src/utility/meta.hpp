@@ -6,13 +6,9 @@ namespace Grid::Impl
 {
 
 // Check if all the template parameter classes are integral
-template <class T, class... types>
+template <class... types>
 struct is_all_integral {
-    static constexpr bool value = std::is_integral_v<T> and is_all_integral<types...>::value;
-};
-template <class T>
-struct is_all_integral<T> {
-    static constexpr bool value = std::is_integral_v<T>;
+    static constexpr bool value = std::conjunction<std::is_integral<types>...>::value;
 };
 template <class... types>
 inline constexpr bool is_all_integral_v = is_all_integral<types...>::value;

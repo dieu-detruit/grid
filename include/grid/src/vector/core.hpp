@@ -11,7 +11,7 @@ namespace Grid::Impl
 {
 
 template <class dim_vector_type, std::size_t rank_rest>
-class vector_square_bracket_result
+class vector_bracket_proxy
 {
     using sub_vector_type = std::array<std::size_t, dim_vector_type::rank>;
 
@@ -19,25 +19,25 @@ class vector_square_bracket_result
     dim_vector_type& ref;
 
 public:
-    vector_square_bracket_result(dim_vector_type& ref)
+    vector_bracket_proxy(dim_vector_type& ref)
         : ref(ref), subscripts{} {}
 
-    vector_square_bracket_result(dim_vector_type& ref, sub_vector_type& subscripts)
+    vector_bracket_proxy(dim_vector_type& ref, sub_vector_type& subscripts)
         : ref(ref), subscripts(std::move(subscripts)) {}
 
-    vector_square_bracket_result(vector_square_bracket_result&& r)
+    vector_bracket_proxy(vector_bracket_proxy&& r)
         : ref(r.ref), subscripts(std::move(r.subscripts)) {}
 
     template <class U>
     auto operator[](U subscript)
     {
         subscripts.at(dim_vector_type::rank - rank_rest) = subscript;
-        return vector_square_bracket_result<dim_vector_type, rank_rest - 1>{ref, subscripts};
+        return vector_bracket_proxy<dim_vector_type, rank_rest - 1>{ref, subscripts};
     }
 };
 
 template <class dim_vector_type>
-class vector_square_bracket_result<dim_vector_type, 1>
+class vector_bracket_proxy<dim_vector_type, 1>
 {
     using sub_vector_type = std::array<std::size_t, dim_vector_type::rank>;
 
@@ -45,13 +45,13 @@ class vector_square_bracket_result<dim_vector_type, 1>
     dim_vector_type& ref;
 
 public:
-    vector_square_bracket_result(dim_vector_type& ref)
+    vector_bracket_proxy(dim_vector_type& ref)
         : ref(ref), subscripts{} {}
 
-    vector_square_bracket_result(dim_vector_type& ref, sub_vector_type& subscripts)
+    vector_bracket_proxy(dim_vector_type& ref, sub_vector_type& subscripts)
         : ref(ref), subscripts(subscripts) {}
 
-    vector_square_bracket_result(vector_square_bracket_result&& r)
+    vector_bracket_proxy(vector_bracket_proxy&& r)
         : ref(r.ref), subscripts(std::move(r.subscripts)) {}
 
     template <class U>
@@ -78,10 +78,10 @@ protected:
     using bracket_return_type = std::conditional_t<
         rank == 1,
         T&,
-        vector_square_bracket_result<this_type, rank - 1>>;
+        vector_bracket_proxy<this_type, rank - 1>>;
 
 public:
-    friend struct vector_square_bracket_result<this_type, 1>;
+    friend struct vector_bracket_proxy<this_type, 1>;
 
     // iterator diverted from std::vector
     using iterator = typename std::vector<T>::iterator;
@@ -121,21 +121,19 @@ public:
         return data.at(vector_index<rank>::index(sizes, subscript...));
     }
 
-    template <class U>
-    inline bracket_return_type operator[](U subscript)
+    inline bracket_return_type operator[](std::size_t subscript)
     {
-        static_assert(std::is_integral_v<U>, "The argument must be integral");
         if constexpr (rank == 1) {
-            return data[vector_index<rank>::index(sizes, subscript)];
+            return data[subscript];
         } else {
-            return vector_square_bracket_result<this_type, rank>{*this}[subscript];
+            return vector_bracket_proxy<this_type, rank>{*this}[subscript];
         }
     }
 
 protected:
     inline T& bracket(std::array<std::size_t, rank> subscripts)
     {
-        return data[vector_index<rank>::index(sizes, subscripts)];
+        return data[vector_index<rank>::index_ar(sizes, subscripts)];
     }
 };
 
