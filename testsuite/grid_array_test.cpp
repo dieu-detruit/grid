@@ -1,6 +1,7 @@
 #include <iostream>
 #include <random>
 
+#include <grid/linear.hpp>
 #include <grid/src/grid/grid_array.hpp>
 
 double round(double min, double max, double x)
@@ -42,10 +43,8 @@ int main()
     std::cout << std::endl;
     */
 
-    for (int i = 0; i < 100; ++i) {
-        double y = 0.02 * i - 1.0;
-        for (int j = 0; j < 100; ++j) {
-            double x = 0.02 * j - 1.0;
+    for (auto& y : Grid::linspace(-1.0, 1.0, 100)) {
+        for (auto& x : Grid::linspace(-1.0, 1.0, 100)) {
             std::cout << x << ' ' << y << ' ' << map[y][x] << std::endl;
         }
         std::cout << std::endl;

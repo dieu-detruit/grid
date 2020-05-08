@@ -96,10 +96,10 @@ public:
     using iterator = typename std::array<T, whole_size>::iterator;
     using const_iterator = typename std::array<T, whole_size>::const_iterator;
 
-    iterator begin() { return this->data.begin(); }
-    const_iterator begin() const { return this->data.begin(); }
-    iterator end() { return this->data.end(); }
-    const_iterator end() const { return this->data.end(); }
+    iterator begin() { return data.begin(); }
+    const_iterator begin() const { return data.begin(); }
+    iterator end() { return data.end(); }
+    const_iterator end() const { return data.end(); }
 
     multi_dim_array() {}
     multi_dim_array(this_type&& r) : data{std::move(r.data)} {}
