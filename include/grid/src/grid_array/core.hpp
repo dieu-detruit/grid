@@ -7,8 +7,8 @@
 
 #include <grid/array.hpp>
 #include <grid/src/grid/grid_base.hpp>
-#include <grid/src/grid/range.hpp>
-#include <grid/src/utility/dynamic_tuple.hpp>
+#include <grid/src/grid_array/range.hpp>
+#include <grid/src/utility/tuple.hpp>
 
 namespace Grid
 {
@@ -67,7 +67,7 @@ protected:
     using this_type = GridArray<value_type, measure_type, rank>;
     using data_type = Grid::array<value_type, N...>;
 
-    std::tuple<Range<measure_type, N>...> ranges;
+    std::tuple<StaticRange<measure_type, N>...> ranges;
     data_type data;
 
 public:
@@ -79,10 +79,10 @@ public:
     iterator end() { return this->data.end(); }
     const_iterator end() const { return this->data.end(); }
 
-    GridArray(Range<measure_type, N>... ranges) : ranges({ranges...}) {}
+    GridArray(StaticRange<measure_type, N>... ranges) : ranges({ranges...}) {}
 
     template <class... types>
-    value_type& at(types... subscript)
+    constexpr value_type& at(types... subscript)
     {
         static_assert(rank == sizeof...(subscript), "The number of argument is invalid.");
         static_assert(std::conjunction<std::is_convertible<types, measure_type>...>::value, "The arguments must be convertible to the measure type.");
@@ -90,7 +90,7 @@ public:
         return at_impl(std::make_index_sequence<rank>{}, subscript...);
     }
 
-    decltype(auto) operator[](measure_type subscript)
+    constexpr decltype(auto) operator[](measure_type subscript)
     {
         if constexpr (rank == 1) {
             return data[std::get<0>(ranges).quantize(subscript)];
@@ -107,7 +107,7 @@ public:
 
 protected:
     template <std::size_t... I, class... types>
-    inline value_type& at_impl(std::index_sequence<I...>, types... subscript)
+    inline constexpr value_type& at_impl(std::index_sequence<I...>, types... subscript)
     {
         return data.at(std::get<I>(ranges).quantize(subscript)...);
     }

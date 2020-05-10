@@ -2,7 +2,7 @@
 #include <random>
 
 #include <grid/linear.hpp>
-#include <grid/src/grid_array/core.hpp>
+#include <grid/src/grid_vector/core.hpp>
 
 int main()
 {
@@ -12,11 +12,11 @@ int main()
     std::normal_distribution<> dist_x(0.0, 0.3);
     std::normal_distribution<> dist_y(0.3, 0.4);
 
-    Grid::GridArray<double, double, 100, 100> map{{-1.0, 1.0}, {-1.0, 1.0}};
+    Grid::GridVector<double, double, 2> map{{{-1.0, 1.0, 100}, {-1.0, 1.0, 100}}};
 
     map.fill(0.0);
 
-    for (std::size_t n = 0; n < 50000; ++n) {
+    for (std::size_t n = 0; n < 10000000; ++n) {
         double x = dist_x(engine);
         double y = dist_y(engine);
 

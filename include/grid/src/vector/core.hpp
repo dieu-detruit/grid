@@ -1,10 +1,12 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <tuple>
 #include <vector>
 
 #include <grid/src/utility/meta.hpp>
+#include <grid/src/utility/tuple.hpp>
 #include <grid/src/vector/index.hpp>
 
 namespace Grid::Impl
@@ -19,11 +21,16 @@ class vector_bracket_proxy
     dim_vector_type& ref;
 
 public:
+    using value_type = typename dim_vector_type::value_type;
+
     vector_bracket_proxy(dim_vector_type& ref)
         : ref(ref), subscripts{} {}
 
     vector_bracket_proxy(dim_vector_type& ref, sub_vector_type& subscripts)
         : ref(ref), subscripts(std::move(subscripts)) {}
+
+    vector_bracket_proxy(const vector_bracket_proxy& l)
+        : ref(l.ref), subscripts(l.subscripts) {}
 
     vector_bracket_proxy(vector_bracket_proxy&& r)
         : ref(r.ref), subscripts(std::move(r.subscripts)) {}
@@ -45,11 +52,16 @@ class vector_bracket_proxy<dim_vector_type, 1>
     dim_vector_type& ref;
 
 public:
+    using value_type = typename dim_vector_type::value_type;
+
     vector_bracket_proxy(dim_vector_type& ref)
         : ref(ref), subscripts{} {}
 
     vector_bracket_proxy(dim_vector_type& ref, sub_vector_type& subscripts)
         : ref(ref), subscripts(subscripts) {}
+
+    vector_bracket_proxy(const vector_bracket_proxy& l)
+        : ref(l.ref), subscripts(l.subscripts) {}
 
     vector_bracket_proxy(vector_bracket_proxy&& r)
         : ref(r.ref), subscripts(std::move(r.subscripts)) {}
@@ -104,6 +116,23 @@ public:
         data.resize(whole_size);
     }
 
+    template <class U>
+    multi_dim_vector(std::array<U, rank> sizes) : sizes{sizes}
+    {
+        static_assert(std::is_integral_v<U>, "The argument must be integral");
+        std::size_t whole_size = 1;
+        for (auto& size : sizes) {
+            whole_size *= size;
+        }
+        data.resize(whole_size);
+    }
+
+    multi_dim_vector(dynamic_tuple<std::size_t, rank> sizes) : sizes{tuple_to_array(sizes)}
+    {
+        std::size_t whole_size = tuple_product(sizes);
+        data.resize(whole_size);
+    }
+
     multi_dim_vector(std::array<std::size_t, rank> sizes) : sizes{std::move(sizes)}
     {
         std::size_t whole_size = 1;
@@ -128,6 +157,11 @@ public:
         } else {
             return vector_bracket_proxy<this_type, rank>{*this}[subscript];
         }
+    }
+
+    inline void fill(value_type val)
+    {
+        std::fill(data.begin(), data.end(), val);
     }
 
 protected:

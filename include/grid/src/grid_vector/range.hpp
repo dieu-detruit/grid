@@ -3,17 +3,18 @@
 namespace Grid
 {
 
-template <class T, std::size_t N>
-struct Range {
+template <class T>
+struct DynamicRange {
 protected:
     T min;
     T max;
+    std::size_t N;
 
     T cell_size;
 
 public:
-    Range(T min, T max)
-        : min(min), max(max), cell_size((max - min) / T{N}) {}
+    DynamicRange(T min, T max, std::size_t N)
+        : min(min), max(max), N(N), cell_size((max - min) / T{static_cast<T>(N)}) {}
 
     /*
      * Policy:
@@ -36,6 +37,17 @@ public:
         } else {
             return static_cast<std::size_t>((x - min) / cell_size);
         }
+    }
+
+    void resize(T _min, T _max)
+    {
+        min = _min;
+        max = _max;
+    }
+
+    operator std::size_t() const
+    {
+        return N;
     }
 };
 
