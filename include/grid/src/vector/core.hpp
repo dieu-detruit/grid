@@ -5,78 +5,17 @@
 #include <tuple>
 #include <vector>
 
-#include <grid/src/utility/meta.hpp>
+#include <grid/src/generic/multidim_base.hpp>
+#include <grid/src/generic/multidim_proxy.hpp>
+#include <grid/src/utility/parameter_pack.hpp>
 #include <grid/src/utility/tuple.hpp>
 #include <grid/src/vector/index.hpp>
 
 namespace Grid::Impl
 {
 
-template <class dim_vector_type, std::size_t rank_rest>
-class vector_bracket_proxy
-{
-    using sub_vector_type = std::array<std::size_t, dim_vector_type::rank>;
-
-    sub_vector_type subscripts;
-    dim_vector_type& ref;
-
-public:
-    using value_type = typename dim_vector_type::value_type;
-
-    vector_bracket_proxy(dim_vector_type& ref)
-        : ref(ref), subscripts{} {}
-
-    vector_bracket_proxy(dim_vector_type& ref, sub_vector_type& subscripts)
-        : ref(ref), subscripts(std::move(subscripts)) {}
-
-    vector_bracket_proxy(const vector_bracket_proxy& l)
-        : ref(l.ref), subscripts(l.subscripts) {}
-
-    vector_bracket_proxy(vector_bracket_proxy&& r)
-        : ref(r.ref), subscripts(std::move(r.subscripts)) {}
-
-    template <class U>
-    auto operator[](U subscript)
-    {
-        subscripts.at(dim_vector_type::rank - rank_rest) = subscript;
-        return vector_bracket_proxy<dim_vector_type, rank_rest - 1>{ref, subscripts};
-    }
-};
-
-template <class dim_vector_type>
-class vector_bracket_proxy<dim_vector_type, 1>
-{
-    using sub_vector_type = std::array<std::size_t, dim_vector_type::rank>;
-
-    sub_vector_type subscripts;
-    dim_vector_type& ref;
-
-public:
-    using value_type = typename dim_vector_type::value_type;
-
-    vector_bracket_proxy(dim_vector_type& ref)
-        : ref(ref), subscripts{} {}
-
-    vector_bracket_proxy(dim_vector_type& ref, sub_vector_type& subscripts)
-        : ref(ref), subscripts(subscripts) {}
-
-    vector_bracket_proxy(const vector_bracket_proxy& l)
-        : ref(l.ref), subscripts(l.subscripts) {}
-
-    vector_bracket_proxy(vector_bracket_proxy&& r)
-        : ref(r.ref), subscripts(std::move(r.subscripts)) {}
-
-    template <class U>
-    typename dim_vector_type::value_type& operator[](U subscript)
-    {
-        subscripts.at(dim_vector_type::rank - 1) = subscript;
-        return ref.bracket(subscripts);
-    }
-};
-
-
 template <class T, std::size_t _rank>
-struct multi_dim_vector {
+struct multi_dim_vector : public MultidimContainerBase<T, _rank, std::vector<T>> {
 public:
     using value_type = T;
     static constexpr std::size_t rank = _rank;
@@ -87,13 +26,9 @@ protected:
     std::array<std::size_t, rank> sizes;
     std::vector<T> data;
 
-    using bracket_return_type = std::conditional_t<
-        rank == 1,
-        T&,
-        vector_bracket_proxy<this_type, rank - 1>>;
-
 public:
-    friend struct vector_bracket_proxy<this_type, 1>;
+    template <class U, std::size_t n>
+    friend struct multidim_proxy;
 
     // iterator diverted from std::vector
     using iterator = typename std::vector<T>::iterator;
@@ -150,12 +85,12 @@ public:
         return data.at(vector_index<rank>::index(sizes, subscript...));
     }
 
-    inline bracket_return_type operator[](std::size_t subscript)
+    inline decltype(auto) operator[](std::size_t subscript)
     {
         if constexpr (rank == 1) {
             return data[subscript];
         } else {
-            return vector_bracket_proxy<this_type, rank>{*this}[subscript];
+            return multidim_proxy<this_type, rank - 1>{*this, subscript * sizes[1]};
         }
     }
 
@@ -164,10 +99,15 @@ public:
         std::fill(data.begin(), data.end(), val);
     }
 
-protected:
-    inline T& bracket(std::array<std::size_t, rank> subscripts)
+    template <std::size_t dim>
+    inline std::size_t dim_size() const
     {
-        return data[vector_index<rank>::index_ar(sizes, subscripts)];
+        return sizes[dim];
+    }
+
+    inline std::size_t dim_size(std::size_t dim) const
+    {
+        return sizes[dim];
     }
 };
 

@@ -5,8 +5,8 @@
 #include <utility>
 #include <vector>
 
-#include <grid/src/grid/grid_base.hpp>
-#include <grid/src/grid/proxy.hpp>
+#include <grid/src/generic/grid_base.hpp>
+#include <grid/src/generic/grid_proxy.hpp>
 #include <grid/src/grid_vector/range.hpp>
 #include <grid/src/utility/tuple.hpp>
 #include <grid/vector.hpp>

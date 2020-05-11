@@ -5,71 +5,11 @@
 #include <type_traits>
 
 #include <grid/src/array/index.hpp>
-#include <grid/src/utility/meta.hpp>
+#include <grid/src/generic/multidim_proxy.hpp>
+#include <grid/src/utility/parameter_pack.hpp>
 
 namespace Grid::Impl
 {
-
-template <class dim_array_type, std::size_t rank_rest>
-class array_bracket_proxy
-{
-    using sub_array_type = std::array<std::size_t, dim_array_type::rank>;
-
-    sub_array_type subscripts;
-    dim_array_type& ref;
-
-public:
-    using value_type = typename dim_array_type::value_type;
-
-    array_bracket_proxy(dim_array_type& ref)
-        : ref(ref), subscripts{} {}
-
-    array_bracket_proxy(dim_array_type& ref, sub_array_type& subscripts)
-        : ref(ref), subscripts(std::move(subscripts)) {}
-
-    array_bracket_proxy(const array_bracket_proxy& l)
-        : ref(l.ref), subscripts(l.subscripts) {}
-
-    array_bracket_proxy(array_bracket_proxy&& r)
-        : ref(r.ref), subscripts(std::move(r.subscripts)) {}
-
-    auto operator[](std::size_t subscript)
-    {
-        subscripts.at(dim_array_type::rank - rank_rest) = subscript;
-        return array_bracket_proxy<dim_array_type, rank_rest - 1>{ref, subscripts};
-    }
-};
-
-template <class dim_array_type>
-class array_bracket_proxy<dim_array_type, 1>
-{
-    using sub_array_type = std::array<std::size_t, dim_array_type::rank>;
-
-    sub_array_type subscripts;
-    dim_array_type& ref;
-
-public:
-    using value_type = typename dim_array_type::value_type;
-
-    array_bracket_proxy(dim_array_type& ref)
-        : ref(ref), subscripts{} {}
-
-    array_bracket_proxy(dim_array_type& ref, sub_array_type& subscripts)
-        : ref(ref), subscripts(subscripts) {}
-
-    array_bracket_proxy(const array_bracket_proxy& l)
-        : ref(l.ref), subscripts(l.subscripts) {}
-
-    array_bracket_proxy(array_bracket_proxy&& r)
-        : ref(r.ref), subscripts(std::move(r.subscripts)) {}
-
-
-    typename dim_array_type::value_type& operator[](std::size_t subscript)
-    {
-        subscripts.at(dim_array_type::rank - 1) = subscript;
-        return ref.bracket(subscripts);
-    }
-};
 
 template <class T, std::size_t... N>
 struct multi_dim_array {
@@ -84,13 +24,9 @@ protected:
 
     std::array<T, whole_size> data;
 
-    using bracket_return_type = std::conditional_t<
-        rank == 1,
-        T&,
-        array_bracket_proxy<this_type, rank - 1>>;
-
 public:
-    friend struct array_bracket_proxy<this_type, 1>;
+    template <class U, std::size_t n>
+    friend struct multidim_proxy;
 
     // iterator diverted from std::array
     using iterator = typename std::array<T, whole_size>::iterator;
@@ -118,14 +54,12 @@ public:
         return data.at(array_index<N...>::index(subscripts...));
     }
 
-    template <class U>
-    inline bracket_return_type operator[](U subscript)
+    inline decltype(auto) operator[](std::size_t subscript)
     {
-        static_assert(std::is_integral_v<U>, "The argument must be integral");
         if constexpr (rank == 1) {
             return data[subscript];
         } else {
-            return array_bracket_proxy<this_type, rank>{*this}[subscript];
+            return multidim_proxy<this_type, rank - 1>{*this, subscript * get_nth_param_v<std::size_t, 0, N...>};
         }
     }
 
@@ -134,10 +68,15 @@ public:
         data.fill(value);
     }
 
-protected:
-    inline T& bracket(std::array<std::size_t, rank> subscripts)
+    template <std::size_t dim>
+    inline std::size_t dim_size()
     {
-        return data[array_index<N...>::index_ar(subscripts)];
+        return get_nth_param_v<std::size_t, dim, N...>;
+    }
+
+    inline std::size_t dim_size(std::size_t dim)
+    {
+        return std::array<std::size_t, rank>{N...}[dim];
     }
 };
 

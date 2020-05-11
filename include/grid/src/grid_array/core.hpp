@@ -6,8 +6,8 @@
 #include <utility>
 
 #include <grid/array.hpp>
-#include <grid/src/grid/grid_base.hpp>
-#include <grid/src/grid/proxy.hpp>
+#include <grid/src/generic/grid_base.hpp>
+#include <grid/src/generic/grid_proxy.hpp>
 #include <grid/src/grid_array/range.hpp>
 #include <grid/src/utility/tuple.hpp>
 
