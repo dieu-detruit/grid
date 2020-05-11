@@ -16,68 +16,41 @@ namespace Grid
 template <class dim_vector_proxy_type, class range_tuple, std::size_t rank_rest>
 class GridVectorBracketProxy
 {
-    dim_vector_proxy_type proxy_fragment;
-    range_tuple ranges;
+    dim_vector_proxy_type proxy;
+    const range_tuple& ranges;
 
 public:
-    GridVectorBracketProxy(dim_vector_proxy_type proxy_fragment, const range_tuple& ranges)
-        : proxy_fragment(proxy_fragment), ranges(ranges) {}
-
-    GridVectorBracketProxy(GridVectorBracketProxy&& r)
-        : proxy_fragment(r.proxy_fragment), ranges(r.ranges) {}
-
-    auto operator[](typename dim_vector_proxy_type::value_type subscript)
-    {
-        return GridVectorBracketProxy<decltype(proxy_fragment[0]), range_tuple, rank_rest - 1>{
-            proxy_fragment[std::get<std::tuple_size<range_tuple>::value - rank_rest>(ranges).quantize(subscript)],
-            ranges};
-    }
-};
-
-template <class dim_vector_proxy_type, class range_tuple>
-class GridVectorBracketProxy<dim_vector_proxy_type, range_tuple, 1>
-{
-    dim_vector_proxy_type proxy_fragment;
-    range_tuple ranges;
-
-public:
-    GridVectorBracketProxy(dim_vector_proxy_type proxy_fragment, const range_tuple& ranges)
-        : proxy_fragment(proxy_fragment), ranges(ranges) {}
-
-    GridVectorBracketProxy(GridVectorBracketProxy&& r)
-        : proxy_fragment(r.proxy_fragment), ranges(r.ranges) {}
+    GridVectorBracketProxy(dim_vector_proxy_type proxy, const range_tuple& ranges)
+        : proxy(proxy), ranges(ranges) {}
 
     decltype(auto) operator[](typename dim_vector_proxy_type::value_type subscript)
     {
-        return proxy_fragment[std::get<std::tuple_size<range_tuple>::value - 1>(ranges).quantize(subscript)];
+        if constexpr (rank_rest == 1) {
+            return proxy[std::get<std::tuple_size<range_tuple>::value - 1>(ranges).quantize(subscript)];
+        } else {
+            return GridVectorBracketProxy<decltype(proxy[0]), range_tuple, rank_rest - 1>{
+                proxy[std::get<std::tuple_size<range_tuple>::value - rank_rest>(ranges).quantize(subscript)],
+                ranges};
+        }
     }
 };
 
 template <class value_type, typename measure_type, std::size_t rank>
-class GridVector : GridMapBase<value_type, measure_type, rank>
+class GridVector
+    : public GridBase<value_type,
+          measure_type,
+          rank,
+          Grid::vector<value_type, rank>>
 {
-public:
-    using value_t = value_type;
-    using measure_t = measure_type;
-
 protected:
     using this_type = GridVector<value_type, measure_type, rank>;
-    using data_type = Grid::vector<value_type, rank>;
+    using base_type = typename this_type::base_type;
 
     Impl::dynamic_tuple<DynamicRange<measure_type>, rank> ranges;
-    data_type data;
 
 public:
-    using iterator = typename data_type::iterator;
-    using const_iterator = typename data_type::const_iterator;
-
-    iterator begin() { return this->data.begin(); }
-    const_iterator begin() const { return this->data.begin(); }
-    iterator end() { return this->data.end(); }
-    const_iterator end() const { return this->data.end(); }
-
     GridVector(Impl::dynamic_tuple<DynamicRange<measure_type>, rank> ranges)
-        : ranges(ranges), data{Impl::tuple_cast<std::size_t>{}(ranges)} {}
+        : ranges(ranges), base_type(Impl::tuple_cast<std::size_t>{}(ranges)) {}
 
     template <class... types>
     value_type& at(types... subscript)
@@ -91,23 +64,18 @@ public:
     decltype(auto) operator[](measure_type subscript)
     {
         if constexpr (rank == 1) {
-            return data[std::get<0>(ranges).quantize(subscript)];
+            return this->data[std::get<0>(ranges).quantize(subscript)];
         } else {
-            return GridVectorBracketProxy<decltype(data[0]), decltype(ranges), rank - 1>{
-                data[std::get<0>(ranges).quantize(subscript)], ranges};
+            return GridVectorBracketProxy<decltype(this->data[0]), decltype(ranges), rank - 1>{
+                this->data[std::get<0>(ranges).quantize(subscript)], ranges};
         }
-    }
-
-    inline void fill(value_type value)
-    {
-        data.fill(value);
     }
 
 protected:
     template <std::size_t... I, class... types>
     inline value_type& at_impl(std::index_sequence<I...>, types... subscript)
     {
-        return data.at(std::get<I>(ranges).quantize(subscript)...);
+        return this->data.at(std::get<I>(ranges).quantize(subscript)...);
     }
 };
 

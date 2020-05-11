@@ -29,7 +29,7 @@ public:
      *          cell_min <= x <= cell_max
      *
      */
-    inline std::size_t quantize(T x) const
+    inline constexpr std::size_t quantize(T x) const
     {
         if (x == max) {
             return N - 1;
