@@ -7,7 +7,7 @@ template <class value_type, class measure_type, std::size_t rank, class data_typ
 class GridBase
 {
 protected:
-    data_type data;
+    data_type _data;
 
 public:
     using base_type = GridBase<value_type, measure_type, rank, data_type>;
@@ -18,19 +18,24 @@ public:
     using iterator = typename data_type::iterator;
     using const_iterator = typename data_type::const_iterator;
 
-    iterator begin() { return this->data.begin(); }
-    const_iterator begin() const { return this->data.begin(); }
-    iterator end() { return this->data.end(); }
-    const_iterator end() const { return this->data.end(); }
+    iterator begin() { return _data.begin(); }
+    const_iterator begin() const { return _data.begin(); }
+    iterator end() { return _data.end(); }
+    const_iterator end() const { return _data.end(); }
 
     template <class... Args>
-    GridBase(Args... args) : data(args...)
+    GridBase(Args... args) : _data(args...)
     {
+    }
+
+    value_type* data()
+    {
+        return _data.data();
     }
 
     inline virtual void fill(value_type value)
     {
-        data.fill(value);
+        _data.fill(value);
     }
 };
 

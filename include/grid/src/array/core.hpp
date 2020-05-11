@@ -22,7 +22,7 @@ public:
 protected:
     using this_type = multi_dim_array<T, N...>;
 
-    std::array<T, whole_size> data;
+    std::array<T, whole_size> _data;
 
 public:
     template <class U, std::size_t n>
@@ -32,18 +32,18 @@ public:
     using iterator = typename std::array<T, whole_size>::iterator;
     using const_iterator = typename std::array<T, whole_size>::const_iterator;
 
-    iterator begin() { return data.begin(); }
-    const_iterator begin() const { return data.begin(); }
-    iterator end() { return data.end(); }
-    const_iterator end() const { return data.end(); }
+    iterator begin() { return _data.begin(); }
+    const_iterator begin() const { return _data.begin(); }
+    iterator end() { return _data.end(); }
+    const_iterator end() const { return _data.end(); }
 
     multi_dim_array() {}
-    multi_dim_array(this_type&& r) : data{std::move(r.data)} {}
-    multi_dim_array(const this_type& l) : data{l.data} {}
+    multi_dim_array(this_type&& r) : _data{std::move(r._data)} {}
+    multi_dim_array(const this_type& l) : _data{l._data} {}
 
     multi_dim_array(T val)
     {
-        data.fill(val);
+        _data.fill(val);
     }
 
     template <class... U>
@@ -51,21 +51,26 @@ public:
     {
         static_assert(sizeof...(U) == rank, "Number of arguments must match the dimension of array");
         static_assert(is_all_integral_v<U...>, "The arguments must be integral");
-        return data.at(array_index<N...>::index(subscripts...));
+        return _data.at(array_index<N...>::index(subscripts...));
     }
 
     inline decltype(auto) operator[](std::size_t subscript)
     {
         if constexpr (rank == 1) {
-            return data[subscript];
+            return _data[subscript];
         } else {
             return multidim_proxy<this_type, rank - 1>{*this, subscript * get_nth_param_v<std::size_t, 0, N...>};
         }
     }
 
+    constexpr T* data()
+    {
+        return _data.data();
+    }
+
     inline void fill(T value)
     {
-        data.fill(value);
+        _data.fill(value);
     }
 
     template <std::size_t dim>

@@ -43,10 +43,10 @@ public:
     decltype(auto) operator[](measure_type subscript)
     {
         if constexpr (rank == 1) {
-            return this->data[std::get<0>(ranges).quantize(subscript)];
+            return this->_data[std::get<0>(ranges).quantize(subscript)];
         } else {
-            return GridProxy<this_type, decltype(this->data[0]), decltype(ranges), rank - 1>{
-                this->data[std::get<0>(ranges).quantize(subscript)], ranges};
+            return GridProxy<this_type, decltype(this->_data[0]), decltype(ranges), rank - 1>{
+                this->_data[std::get<0>(ranges).quantize(subscript)], ranges};
         }
     }
 
@@ -54,7 +54,7 @@ protected:
     template <std::size_t... I, class... types>
     inline value_type& at_impl(std::index_sequence<I...>, types... subscript)
     {
-        return this->data.at(std::get<I>(ranges).quantize(subscript)...);
+        return this->_data.at(std::get<I>(ranges).quantize(subscript)...);
     }
 };
 

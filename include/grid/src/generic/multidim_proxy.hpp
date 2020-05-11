@@ -21,7 +21,7 @@ public:
     decltype(auto) operator[](std::size_t subscript)
     {
         if constexpr (rank_rest == 1) {
-            return ref.data[index_proxy + subscript];
+            return ref._data[index_proxy + subscript];
         } else {
             return multidim_proxy<multidim_type, rank_rest - 1>{
                 ref,
