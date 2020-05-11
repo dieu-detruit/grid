@@ -19,9 +19,9 @@ struct multidim_array
 protected:
     using this_type = multidim_array<T, N...>;
     using base_type = typename this_type::base_type;
-    using container_type = typename this_type::container_type;
 
 public:
+    using container_type = typename this_type::container_type;
     static constexpr std::size_t rank = base_type::rank;
 
     multidim_array() {}

@@ -9,6 +9,8 @@ class GridBase
 protected:
     data_type _data;
 
+    using container_type = typename data_type::container_type;
+
 public:
     using base_type = GridBase<value_type, measure_type, rank, data_type>;
 
@@ -31,6 +33,11 @@ public:
     value_type* data()
     {
         return _data.data();
+    }
+
+    void swap(container_type& x)
+    {
+        _data.swap(x);
     }
 
     inline virtual void fill(value_type value)

@@ -39,6 +39,11 @@ public:
         return _data.data();
     }
 
+    inline void swap(container_type& x)
+    {
+        _data.swap(x);
+    }
+
     inline void fill(value_type val)
     {
         std::fill(_data.begin(), _data.end(), val);
