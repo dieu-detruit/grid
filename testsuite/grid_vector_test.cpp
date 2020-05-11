@@ -21,12 +21,12 @@ int main()
         double y = dist_y(engine);
 
         if (-1.0 < x && x < 1.0 && -1.0 < y && y < 1.0) {
-            map.at(y, x) += 1.0;
+            map.at(x, y) += 1.0;
         }
     }
 
-    for (auto& y : Grid::linspace(-1.0, 1.0, 100)) {
-        for (auto& x : Grid::linspace(-1.0, 1.0, 100)) {
+    for (auto& x : Grid::arange(-1.0, 1.0, 0.02)) {
+        for (auto& y : Grid::linspace(-1.0, 1.0, 100)) {
             std::cout << x << ' ' << y << ' ' << map[y][x] << std::endl;
         }
         std::cout << std::endl;

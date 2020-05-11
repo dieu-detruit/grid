@@ -7,6 +7,6 @@ namespace Grid
 
 // Multi-dimension Version std::vector
 template <class T, std::size_t... N>
-using vector = Impl::multi_dim_vector<T, N...>;
+using vector = Impl::multidim_vector<T, N...>;
 
 }  // namespace Grid
