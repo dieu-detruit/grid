@@ -7,36 +7,12 @@
 
 #include <grid/array.hpp>
 #include <grid/src/grid/grid_base.hpp>
+#include <grid/src/grid/proxy.hpp>
 #include <grid/src/grid_array/range.hpp>
 #include <grid/src/utility/tuple.hpp>
 
 namespace Grid
 {
-
-template <class dim_array_proxy_type, class range_tuple, std::size_t rank_rest>
-class GridArrayBracketProxy
-{
-    dim_array_proxy_type proxy_fragment;
-    range_tuple ranges;
-
-public:
-    GridArrayBracketProxy(dim_array_proxy_type proxy_fragment, const range_tuple& ranges)
-        : proxy_fragment(proxy_fragment), ranges(ranges) {}
-
-    GridArrayBracketProxy(GridArrayBracketProxy&& r)
-        : proxy_fragment(r.proxy_fragment), ranges(r.ranges) {}
-
-    decltype(auto) operator[](typename dim_array_proxy_type::value_type subscript)
-    {
-        if constexpr (rank_rest == 1) {
-            return proxy_fragment[std::get<std::tuple_size<range_tuple>::value - 1>(ranges).quantize(subscript)];
-        } else {
-            return GridArrayBracketProxy<decltype(proxy_fragment[0]), range_tuple, rank_rest - 1>{
-                proxy_fragment[std::get<std::tuple_size<range_tuple>::value - rank_rest>(ranges).quantize(subscript)],
-                ranges};
-        }
-    }
-};
 
 template <class value_type, typename measure_type, std::size_t... N>
 class GridArray
@@ -71,7 +47,7 @@ public:
         if constexpr (rank == 1) {
             return this->data[std::get<0>(ranges).quantize(subscript)];
         } else {
-            return GridArrayBracketProxy<decltype(this->data[0]), decltype(ranges), rank - 1>{
+            return GridProxy<this_type, decltype(this->data[0]), decltype(ranges), rank - 1>{
                 this->data[std::get<0>(ranges).quantize(subscript)], ranges};
         }
     }
