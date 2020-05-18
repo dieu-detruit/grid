@@ -13,7 +13,7 @@ public:
     GridProxy(container_proxy_type proxy, const range_tuple& ranges)
         : proxy(proxy), ranges(ranges) {}
 
-    decltype(auto) operator[](typename container_proxy_type::value_type subscript)
+    decltype(auto) operator[](typename grid_type::measure_t subscript)
     {
         if constexpr (rank_rest == 1) {
             return proxy[std::get<std::tuple_size<range_tuple>::value - 1>(ranges).quantize(subscript)];

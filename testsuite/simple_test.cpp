@@ -1,5 +1,6 @@
 #include <iostream>
 #include <random>
+#include <complex>
 
 #include <grid/core.hpp>
 #include <grid/linear.hpp>
@@ -12,7 +13,7 @@ int main()
     std::normal_distribution<> dist_x(0.0, 0.3);
     std::normal_distribution<> dist_y(0.3, 0.4);
 
-    Grid::GridArrayd<double, 100, 100> map{{-1.0, 1.0}, {-1.0, 1.0}};
+    Grid::GridArrayd<std::complex<double>, 100, 100> map{{-1.0, 1.0}, {-1.0, 1.0}};
 
     map.fill(0.0);
 
