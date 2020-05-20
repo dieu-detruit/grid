@@ -36,4 +36,3 @@ template <class T>
 using GridVector3ld = GridVector<T, long double, 3>;
 
 }  // namespace Grid
-
