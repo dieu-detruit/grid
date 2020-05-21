@@ -18,19 +18,17 @@ int main()
     for (int i = 0; i < 20; ++i) {
         A[i] = i;
     }
-    for (int i = 0; i < 20; ++i) {
-        B[i] = i + 1;
-    }
-    for (int i = 0; i < 20; ++i) {
-        C[i] = -i;
-    }
-
-    D.fill(0.5);
-
 
     for (auto [a, b, c, d] : Grid::zip(A, B, C, D)) {
-        std::cout << (a * b + c) * d << std::endl;
+        b = a + 1;
+        c = a * 2;
+        d = a / 2.0;
     }
+
+    for (auto [a, b, c, d] : Grid::zip(A, B, C, D)) {
+        std::cout << a << ' ' << b << ' ' << c << ' ' << d << std::endl;
+    }
+
 
     return 0;
 }

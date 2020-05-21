@@ -30,7 +30,7 @@ public:
     {
         return not comp_eq_impl(index_sequence{}, right);
     }
-    auto operator*()
+    decltype(auto) operator*()
     {
         return get_ref_impl(index_sequence{});
     }
@@ -44,16 +44,26 @@ public:
         post_increment_impl(index_sequence{});
         return *this;
     }
+    this_type& operator--()
+    {
+        pre_decrement_impl(index_sequence{});
+        return *this;
+    }
+    this_type& operator--(int)
+    {
+        post_decrement_impl(index_sequence{});
+        return *this;
+    }
 
 
 private:
     template <std::size_t... I>
     bool comp_eq_impl(std::index_sequence<I...>, this_type right)
     {
-        return ((std::get<I>(itrs) == std::get<I>(right.itrs) ? true : false) or ...);
+        return ((std::get<I>(itrs) == std::get<I>(right.itrs)) or ...);
     }
     template <std::size_t... I>
-    auto get_ref_impl(std::index_sequence<I...>)
+    decltype(auto) get_ref_impl(std::index_sequence<I...>)
     {
         return value_type_lref_tuple{*std::get<I>(itrs)...};
     }
@@ -66,6 +76,16 @@ private:
     void post_increment_impl(std::index_sequence<I...>)
     {
         (void(std::get<I>(itrs)++), ...);
+    }
+    template <std::size_t... I>
+    void pre_decrement_impl(std::index_sequence<I...>)
+    {
+        (void(--std::get<I>(itrs)), ...);
+    }
+    template <std::size_t... I>
+    void post_decrement_impl(std::index_sequence<I...>)
+    {
+        (void(std::get<I>(itrs)--), ...);
     }
 };
 

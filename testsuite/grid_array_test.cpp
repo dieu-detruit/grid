@@ -25,8 +25,8 @@ int main()
         }
     }
 
-    for (auto& y : Grid::linspace(-1.0, 1.0, 100)) {
-        for (auto& x : Grid::linspace(-1.0, 1.0, 100)) {
+    for (auto& y : map.line<0>()) {
+        for (auto& x : map.line<1>()) {
             std::cout << x << ' ' << y << ' ' << map[y][x] << std::endl;
         }
         std::cout << std::endl;

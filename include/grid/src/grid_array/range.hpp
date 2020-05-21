@@ -6,14 +6,14 @@ namespace Grid
 template <class T, std::size_t N>
 struct StaticRange {
 protected:
-    T min;
-    T max;
+    T _min;
+    T _max;
 
-    T cell_size;
+    T _cell_size;
 
 public:
     constexpr StaticRange(T min, T max)
-        : min(min), max(max), cell_size((max - min) / T{N}) {}
+        : _min(min), _max(max), _cell_size((_max - _min) / static_cast<T>(N)) {}
 
     /*
      * Policy:
@@ -31,11 +31,26 @@ public:
      */
     inline constexpr std::size_t quantize(T x) const
     {
-        if (x == max) {
+        if (x == _max) {
             return N - 1;
         } else {
-            return static_cast<std::size_t>((x - min) / cell_size);
+            return static_cast<std::size_t>((x - _min) / _cell_size);
         }
+    }
+
+    inline T min() const { return _min; }
+    inline T max() const { return _max; }
+    inline T cell_size() const { return _cell_size; }
+
+    inline void min(T min_new)
+    {
+        _min = min_new;
+        _cell_size = (_max - _min) / static_cast<T>(N);
+    }
+    inline void max(T max_new)
+    {
+        _min = max_new;
+        _cell_size = (_max - _min) / static_cast<T>(N);
     }
 };
 

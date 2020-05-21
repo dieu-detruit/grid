@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 
+#include <grid/linear.hpp>
 #include <grid/src/generic/grid_base.hpp>
 #include <grid/src/generic/grid_proxy.hpp>
 #include <grid/src/grid_vector/range.hpp>
@@ -30,6 +31,17 @@ protected:
 public:
     GridVector(Impl::dynamic_tuple<DynamicRange<measure_type>, rank> ranges)
         : ranges(ranges), base_type(Impl::tuple_cast<std::size_t>{}(ranges)) {}
+
+    auto range(std::size_t n) const
+    {
+        auto range = Impl::tuple_to_ref_array(ranges).at(n);
+        return std::make_pair<measure_type, measure_type>(range.min(), range.max());
+    }
+    auto line(std::size_t n)
+    {
+        const auto& range = Impl::tuple_to_ref_array(ranges).at(n);
+        return arange(range.min(), range.max(), range.cell_size());
+    }
 
     template <class... types>
     value_type& at(types... subscript)

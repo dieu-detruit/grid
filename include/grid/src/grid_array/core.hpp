@@ -1,11 +1,13 @@
 #pragma once
 
 #include <array>
+#include <functional>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 
 #include <grid/array.hpp>
+#include <grid/linear.hpp>
 #include <grid/src/generic/grid_base.hpp>
 #include <grid/src/generic/grid_proxy.hpp>
 #include <grid/src/grid_array/range.hpp>
@@ -33,6 +35,24 @@ protected:
 public:
     GridArray(StaticRange<measure_type, N>... ranges) : ranges({ranges...}) {}
 
+    template <std::size_t n>
+    decltype(auto) range()
+    {
+        return std::ref(std::get<n>(ranges));
+    }
+
+    template <std::size_t n>
+    auto line()
+    {
+        const auto& range = std::get<n>(ranges);
+        return arange(range.min(), range.max(), range.cell_size());
+    }
+    auto line(std::size_t n)
+    {
+        const auto& range = Impl::tuple_to_ref_array(ranges).at(n);
+        return arange(range.min(), range.max(), range.cell_size());
+    }
+
     template <class... types>
     constexpr value_type& at(types... subscript)
     {
@@ -51,7 +71,6 @@ public:
                 this->_data[std::get<0>(ranges).quantize(subscript)], ranges};
         }
     }
-
 
 protected:
     template <std::size_t... I, class... types>

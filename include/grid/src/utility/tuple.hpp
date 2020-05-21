@@ -31,14 +31,30 @@ struct dynamic_tuple_impl<T, 1> {
 template <class T, std::size_t N>
 using dynamic_tuple = typename dynamic_tuple_impl<T, N>::type;
 
-// convert tuple to an array
+// convert tuple to array
 template <class Tuple, std::size_t... I>
 inline auto tuple_to_array_impl(Tuple&& tp, std::index_sequence<I...>)
 {
-    return std::array<std::tuple_element_t<0, std::decay_t<Tuple>>, sizeof...(I)>{std::get<I>(tp)...};
+    using element_type = std::tuple_element_t<0, std::decay_t<Tuple>>;
+    return std::array<element_type, sizeof...(I)>{std::get<I>(tp)...};
 }
 template <class Tuple>
 auto tuple_to_array(Tuple&& tp)
+{
+    return tuple_to_array_impl(tp, std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>{});
+}
+
+// get an array of reference to each value of a tuple
+template <class Tuple, std::size_t... I>
+inline auto tuple_to_ref_array_impl(Tuple& tp, std::index_sequence<I...>)
+{
+    using element_type
+        = std::add_lvalue_reference_t<
+            std::tuple_element_t<0, std::decay_t<Tuple>>>;
+    return std::array<element_type, sizeof...(I)>{std::ref(std::get<I>(tp))...};
+}
+template <class Tuple>
+auto tuple_to_ref_array(Tuple& tp)
 {
     return tuple_to_array_impl(tp, std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>{});
 }
