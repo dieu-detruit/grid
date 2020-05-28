@@ -11,21 +11,13 @@ namespace Grid::Impl
 {
 
 // dynamic_tuple
-template <class new_type, class... types>
-constexpr auto get_tuple_concat_tag(type_sequence_tag<std::tuple<new_type>>, type_sequence_tag<std::tuple<types...>>)
-{
-    return type_empty_tag<std::tuple<new_type, types...>>{};
-}
-
-template <class T, std::size_t N>
+template <class T, std::size_t N, class... pack>
 struct dynamic_tuple_impl {
-    using type = unwrap_empty_tag_t<
-        decltype(
-            get_tuple_concat_tag(type_sequence_tag<std::tuple<T>>{}, type_sequence_tag<typename dynamic_tuple_impl<T, N - 1>::type>{}))>;
+    using type = typename dynamic_tuple_impl<T, N - 1, T, pack...>::type;
 };
-template <class T>
-struct dynamic_tuple_impl<T, 1> {
-    using type = std::tuple<T>;
+template <class T, class... pack>
+struct dynamic_tuple_impl<T, 0, pack...> {
+    using type = std::tuple<pack...>;
 };
 
 template <class T, std::size_t N>
@@ -61,7 +53,7 @@ auto tuple_to_ref_array(Tuple& tp)
 
 // cast all elements to a type
 template <class T, class Tuple, std::size_t... I>
-inline auto tuple_cast_impl(type_empty_tag<T>, Tuple&& tp, std::index_sequence<I...>)
+inline auto tuple_cast_impl(type_tag<T>, Tuple&& tp, std::index_sequence<I...>)
 {
     return dynamic_tuple<T, sizeof...(I)>{static_cast<T>(std::get<I>(tp))...};
 }
@@ -70,7 +62,7 @@ struct tuple_cast {
     template <class Tuple>
     auto operator()(Tuple&& tp)
     {
-        return tuple_cast_impl(type_empty_tag<T>{}, tp, std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>{});
+        return tuple_cast_impl(type_tag<T>{}, tp, std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>{});
     }
 };
 

@@ -15,22 +15,22 @@
 namespace Grid
 {
 
-template <class value_type, typename measure_type, std::size_t rank>
-class GridVector
+template <class value_type, typename measure_type, std::size_t rank, class... range_types>
+class GridVectorImpl
     : public GridBase<value_type,
           measure_type,
           rank,
           Grid::vector<value_type, rank>>
 {
 protected:
-    using this_type = GridVector<value_type, measure_type, rank>;
+    using this_type = GridVectorImpl<value_type, measure_type, rank, range_types...>;
     using base_type = typename this_type::base_type;
 
     Impl::dynamic_tuple<DynamicRange<measure_type>, rank> ranges;
 
 public:
-    GridVector(Impl::dynamic_tuple<DynamicRange<measure_type>, rank> ranges)
-        : ranges(ranges), base_type(Impl::tuple_cast<std::size_t>{}(ranges)) {}
+    GridVectorImpl(range_types... ranges)
+        : ranges(ranges...), base_type(static_cast<std::size_t>(ranges)...) {}
 
     auto range(std::size_t n) const
     {
@@ -69,5 +69,24 @@ protected:
         return this->_data.at(std::get<I>(ranges).quantize(subscript)...);
     }
 };
+
+namespace Impl
+{
+template <class value_type, typename measure_type, std::size_t rank, class... types>
+auto grid_vector_wrapper_impl(type_tag<std::tuple<types...>>)
+{
+    return type_tag<GridVectorImpl<value_type, measure_type, rank, types...>>{};
+}
+
+template <class value_type, typename measure_type, std::size_t rank>
+struct grid_vector_wrapper {
+    using type = unwrap_type_tag_t<
+        decltype(grid_vector_wrapper_impl<value_type, measure_type, rank>(
+            type_tag<dynamic_tuple<DynamicRange<measure_type>, rank>>{}))>;
+};
+}  // namespace Impl
+
+template <class value_type, typename measure_type, std::size_t rank>
+using GridVector = typename Impl::grid_vector_wrapper<value_type, measure_type, rank>::type;
 
 }  // namespace Grid
