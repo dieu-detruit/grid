@@ -12,7 +12,7 @@ int main()
     std::normal_distribution<> dist_x(0.0, 0.3);
     std::normal_distribution<> dist_y(0.3, 0.4);
 
-    Grid::GridVector<double, double, 2> map{{{-1.0, 1.0, 100}, {-1.0, 1.0, 100}}};
+    Grid::GridVector<double, double, 2> map{{-1.0, 1.0, 100}, {-1.0, 1.0, 100}};
 
     map.fill(0.0);
 

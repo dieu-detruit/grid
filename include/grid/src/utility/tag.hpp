@@ -7,23 +7,19 @@ namespace Grid::Impl
 template <class... types>
 struct type_sequence_tag {
 };
+template <class T>
+struct type_sequence_tag<T> {
+    using type = T;
+};
+template <>
+struct type_sequence_tag<> {
+};
+
 
 // tag that has 0 argument constructor to get the result type of function with no argument invoke
 template <class T>
-struct type_tag {
-    using type = T;
-};
+using type_tag = type_sequence_tag<T>;
 
-// unwrap empty tag
-template <class T>
-struct unwrap_type_tag {
-    using type = T;
-};
-template <class T>
-struct unwrap_type_tag<type_tag<T>> {
-    using type = T;
-};
-template <class T>
-using unwrap_type_tag_t = typename unwrap_type_tag<T>::type;
+using empty_tag = type_sequence_tag<>;
 
 }  // namespace Grid::Impl

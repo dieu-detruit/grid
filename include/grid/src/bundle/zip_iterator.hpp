@@ -1,11 +1,14 @@
 #pragma once
 
+#pragma once
+
 #include <iterator>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 
 #include <grid/src/utility/iterator.hpp>
+#include <grid/src/utility/reference.hpp>
 
 namespace Grid
 {
@@ -14,13 +17,14 @@ template <class... itr_types>
 class zip_iterator
 {
     using index_sequence = std::make_index_sequence<sizeof...(itr_types)>;
-    using value_type_lref_tuple = std::tuple<std::add_lvalue_reference_t<typename std::iterator_traits<itr_types>::value_type>...>;
     using this_type = zip_iterator<itr_types...>;
 
-    std::tuple<itr_types...> itrs;
+    std::tuple<std::remove_reference_t<itr_types>...> itrs;
 
 public:
-    zip_iterator(itr_types... itrs) : itrs{itrs...} {}
+    using value_type = std::tuple<Impl::copy_ref_info_t<itr_types, typename std::iterator_traits<std::remove_reference_t<itr_types>>::value_type>...>;
+
+    zip_iterator(std::remove_reference_t<itr_types>... itrs) : itrs{itrs...} {}
 
     bool operator==(this_type right)
     {
@@ -63,9 +67,9 @@ private:
         return ((std::get<I>(itrs) == std::get<I>(right.itrs)) or ...);
     }
     template <std::size_t... I>
-    decltype(auto) get_ref_impl(std::index_sequence<I...>)
+    auto get_ref_impl(std::index_sequence<I...>)
     {
-        return value_type_lref_tuple{*std::get<I>(itrs)...};
+        return value_type{*std::get<I>(itrs)...};
     }
     template <std::size_t... I>
     void pre_increment_impl(std::index_sequence<I...>)
@@ -89,41 +93,16 @@ private:
     }
 };
 
-template <class... types>
-struct Zip {
+}  // namespace Grid
 
-    using iterator = zip_iterator<Impl::get_iterator_t<types>...>;
+namespace std
+{
 
-    std::tuple<types&...> refs;
-
-    template <std::size_t... I>
-    inline iterator begin_impl(std::index_sequence<I...>)
-    {
-        return iterator{std::get<I>(refs).begin()...};
-    }
-    template <std::size_t... I>
-    inline iterator end_impl(std::index_sequence<I...>)
-    {
-        return iterator{std::get<I>(refs).end()...};
-    }
-
-public:
-    Zip(types&... refs) : refs{refs...} {}
-
-    iterator begin()
-    {
-        return begin_impl(std::make_index_sequence<sizeof...(types)>{});
-    }
-    iterator end()
-    {
-        return end_impl(std::make_index_sequence<sizeof...(types)>{});
-    }
+// Specialization of std::iterator_traits
+template <class... itr_types>
+struct iterator_traits<Grid::zip_iterator<itr_types...>> {
+    using value_type = typename Grid::zip_iterator<itr_types...>::value_type;
+    using iterator_category = typename std::bidirectional_iterator_tag;
 };
 
-template <class... types>
-auto zip(types&... refs) -> Zip<types...>
-{
-    return Zip{refs...};
-}
-
-}  // namespace Grid
+}  // namespace std

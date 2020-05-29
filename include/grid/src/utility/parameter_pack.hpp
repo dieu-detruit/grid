@@ -1,6 +1,8 @@
 #pragma once
 
+#include <strings.h>
 #include <type_traits>
+#include <utility>
 
 namespace Grid::Impl
 {
@@ -49,5 +51,68 @@ struct get_last_param {
 template <class T, T... params>
 constexpr T get_last_param_v = get_nth_param<T, params...>::value;
 
+// Get the Nth index
+template <std::size_t n, std::size_t... I>
+auto get_nth_index_impl(std::index_sequence<I...>)
+{
+    return get_nth_param<std::size_t, n, I...>{};
+}
+
+template <std::size_t n, class sequence>
+static constexpr std::size_t get_nth_index_v = decltype(get_nth_index_impl(sequence{}))::value;
+
+// Get the Nth type
+template <std::size_t n, class... types>
+struct get_nth_type {
+    static_assert(n < 1 + sizeof...(types), "out of range");
+    using type = std::tuple_element_t<n, std::tuple<types...>>;
+};
+template <std::size_t n, class... types>
+using get_nth_type_t = typename get_nth_type<n, types...>::type;
+
+// Index sequence stack
+template <std::size_t... I>
+struct index_sequence_pile {
+    template <std::size_t n>
+    using push = index_sequence_pile<n, I...>;
+
+    using type = std::index_sequence<I...>;
+};
+
+// Get reverse index sequence
+template <class sequence_pile, std::size_t... I>
+struct reverse_index_sequence_impl {
+};
+template <class sequence_pile, std::size_t first, std::size_t... I>
+struct reverse_index_sequence_impl<sequence_pile, first, I...> {
+    using type = typename reverse_index_sequence_impl<typename sequence_pile::template push<first>, I...>::type;
+};
+template <class sequence_pile>
+struct reverse_index_sequence_impl<sequence_pile> {
+    using type = typename sequence_pile::type;
+};
+
+template <std::size_t first, std::size_t... I>
+auto reverse_index_sequence_redirect(std::index_sequence<first, I...>)
+{
+    if constexpr (sizeof...(I) == 0) {
+        return std::index_sequence<first>{};
+    } else {
+        return typename reverse_index_sequence_impl<index_sequence_pile<first>, I...>::type{};
+    }
+}
+
+template <std::size_t... I>
+using reversed_index_sequence = decltype(reverse_index_sequence_redirect(std::index_sequence<I...>{}));
+
+template <std::size_t... I>
+auto make_reversed_index_sequence_impl(std::index_sequence<I...>)
+    -> reversed_index_sequence<I...>
+{
+}
+
+template <std::size_t N>
+using make_reversed_index_sequence = decltype(
+    make_reversed_index_sequence_impl(std::make_index_sequence<N>{}));
 
 }  // namespace Grid::Impl

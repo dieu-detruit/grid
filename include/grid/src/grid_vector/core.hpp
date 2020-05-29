@@ -26,20 +26,19 @@ protected:
     using this_type = GridVectorImpl<value_type, measure_type, rank, range_types...>;
     using base_type = typename this_type::base_type;
 
-    Impl::dynamic_tuple<DynamicRange<measure_type>, rank> ranges;
+    std::array<DynamicRange<measure_type>, rank> ranges;
 
 public:
     GridVectorImpl(range_types... ranges)
-        : ranges(ranges...), base_type(static_cast<std::size_t>(ranges)...) {}
+        : ranges{{ranges...}}, base_type(static_cast<std::size_t>(ranges)...) {}
 
-    auto range(std::size_t n) const
+    decltype(auto) range(std::size_t n) const
     {
-        auto range = Impl::tuple_to_ref_array(ranges).at(n);
-        return std::make_pair<measure_type, measure_type>(range.min(), range.max());
+        return ranges.at(n);
     }
     auto line(std::size_t n)
     {
-        const auto& range = Impl::tuple_to_ref_array(ranges).at(n);
+        const auto& range = ranges.at(n);
         return arange(range.min(), range.max(), range.cell_size());
     }
 
@@ -80,9 +79,9 @@ auto grid_vector_wrapper_impl(type_tag<std::tuple<types...>>)
 
 template <class value_type, typename measure_type, std::size_t rank>
 struct grid_vector_wrapper {
-    using type = unwrap_type_tag_t<
-        decltype(grid_vector_wrapper_impl<value_type, measure_type, rank>(
-            type_tag<dynamic_tuple<DynamicRange<measure_type>, rank>>{}))>;
+    using type = typename decltype(
+        grid_vector_wrapper_impl<value_type, measure_type, rank>(
+            type_tag<dynamic_tuple_t<DynamicRange<measure_type>, rank>>{}))::type;
 };
 }  // namespace Impl
 

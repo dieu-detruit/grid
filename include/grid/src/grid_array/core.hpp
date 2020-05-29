@@ -47,12 +47,6 @@ public:
         const auto& range = std::get<n>(ranges);
         return arange(range.min(), range.max(), range.cell_size());
     }
-    auto line(std::size_t n)
-    {
-        const auto& range = Impl::tuple_to_ref_array(ranges).at(n);
-        return arange(range.min(), range.max(), range.cell_size());
-    }
-
     template <class... types>
     constexpr value_type& at(types... subscript)
     {
