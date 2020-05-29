@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <grid/linear.hpp>
+#include <grid/prod.hpp>
 #include <grid/src/generic/grid_base.hpp>
 #include <grid/src/generic/grid_proxy.hpp>
 #include <grid/src/grid_vector/range.hpp>
@@ -41,6 +42,10 @@ public:
         const auto& range = ranges.at(n);
         return arange(range.min(), range.max(), range.cell_size());
     }
+    auto lines()
+    {
+        return lines_impl(std::make_index_sequence<rank>{});
+    }
 
     template <class... types>
     value_type& at(types... subscript)
@@ -66,6 +71,13 @@ protected:
     inline value_type& at_impl(std::index_sequence<I...>, types... subscript)
     {
         return this->_data.at(std::get<I>(ranges).quantize(subscript)...);
+    }
+
+    template <std::size_t... I>
+    inline auto lines_impl(std::index_sequence<I...>)
+    {
+        return Grid::prod(
+            arange(ranges[I].min(), ranges[I].max(), ranges[I].cell_size())...);
     }
 };
 

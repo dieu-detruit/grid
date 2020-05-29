@@ -8,6 +8,7 @@
 
 #include <grid/array.hpp>
 #include <grid/linear.hpp>
+#include <grid/prod.hpp>
 #include <grid/src/generic/grid_base.hpp>
 #include <grid/src/generic/grid_proxy.hpp>
 #include <grid/src/grid_array/range.hpp>
@@ -47,6 +48,12 @@ public:
         const auto& range = std::get<n>(ranges);
         return arange(range.min(), range.max(), range.cell_size());
     }
+
+    auto lines()
+    {
+        return lines_impl(std::make_index_sequence<rank>{});
+    }
+
     template <class... types>
     constexpr value_type& at(types... subscript)
     {
@@ -71,6 +78,13 @@ protected:
     inline constexpr value_type& at_impl(std::index_sequence<I...>, types... subscript)
     {
         return this->_data.at(std::get<I>(ranges).quantize(subscript)...);
+    }
+
+    template <std::size_t... I>
+    inline auto lines_impl(std::index_sequence<I...>)
+    {
+        return Grid::prod(
+            arange(std::get<I>(ranges).min(), std::get<I>(ranges).max(), std::get<I>(ranges).cell_size())...);
     }
 };
 

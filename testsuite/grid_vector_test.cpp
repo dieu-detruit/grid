@@ -25,11 +25,8 @@ int main()
         }
     }
 
-    for (auto& x : map.line(0)) {
-        for (auto& y : map.line(1)) {
-            std::cout << x << ' ' << y << ' ' << map[y][x] << std::endl;
-        }
-        std::cout << std::endl;
+    for (auto [x, y] : map.lines()) {
+        std::cout << x << ' ' << y << ' ' << map[y][x] << std::endl;
     }
 
     return 0;
