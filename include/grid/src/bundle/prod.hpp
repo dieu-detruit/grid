@@ -10,6 +10,7 @@
 #include <grid/src/bundle/prod_iterator.hpp>
 #include <grid/src/utility/iterator.hpp>
 #include <grid/src/utility/parameter_pack.hpp>
+#include <grid/src/utility/reference.hpp>
 #include <grid/src/utility/tuple.hpp>
 
 namespace Grid
@@ -19,8 +20,8 @@ template <class... types>
 class Product
 {
 public:
-    //using iterator = product_iterator<Impl::copy_ref_info_t<types, Impl::get_iterator_t<types>>...>;
-    using iterator = product_iterator<Impl::get_iterator_t<types>...>;
+    using iterator = product_iterator<Impl::copy_ref_info_t<types, Impl::get_iterator_t<types>>...>;
+    //using iterator = product_iterator<Impl::get_iterator_t<types>...>;
 
 private:
     std::tuple<types...> refs;

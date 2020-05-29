@@ -9,6 +9,7 @@
 
 #include <grid/src/utility/iterator.hpp>
 #include <grid/src/utility/parameter_pack.hpp>
+#include <grid/src/utility/reference.hpp>
 #include <grid/src/utility/tuple.hpp>
 
 namespace Grid
@@ -18,15 +19,15 @@ template <class... itr_types>
 class product_iterator
 {
     // zip_iteratorが入ってたら渡すときは一列にtupleにしてあげないといけない
-    using value_type_tuple = Impl::flatten_tuple_t<typename std::iterator_traits<itr_types>::value_type...>;
+    using value_type_tuple = Impl::flatten_tuple_t<typename std::iterator_traits<std::remove_reference_t<itr_types>>::value_type...>;
 
     template <std::size_t n>
-    using value_tuple_element = Impl::flatten_tuple_element<n, typename std::iterator_traits<itr_types>::value_type...>;
+    using value_tuple_element = Impl::flatten_tuple_element<n, typename std::iterator_traits<std::remove_reference_t<itr_types>>::value_type...>;
 
     static constexpr std::size_t prod_size = sizeof...(itr_types);
     static constexpr std::size_t prod_expanded_size = std::tuple_size_v<value_type_tuple>;
 
-    using itr_tuple = std::tuple<itr_types...>;
+    using itr_tuple = std::tuple<std::remove_reference_t<itr_types>...>;
     using this_type = product_iterator<itr_types...>;
 
     using index_sequence = std::make_index_sequence<prod_size>;
@@ -41,9 +42,9 @@ public:
     using value_type = value_type_tuple;
 
     product_iterator(
-        itr_types... itrs,
-        itr_types... begins,
-        itr_types... ends)
+        std::remove_reference_t<itr_types>... itrs,
+        std::remove_reference_t<itr_types>... begins,
+        std::remove_reference_t<itr_types>... ends)
         : itrs{itrs...}, begins{begins...}, ends{ends...} {}
 
     bool operator==(this_type right)

@@ -37,14 +37,12 @@ int main()
     }
 
     // Multi Dimensional Zip test
-    /*std::cout << "multi dimension ----" << std::endl;
-    for (auto [a, b] : Grid::prod(A, Grid::arange(1, 10, 1))) {
-        //what_is_T<decltype(b)> _;
-        std::cout << a << ' ' << b << std::endl;
+    std::cout << "multi dimension ----" << std::endl;
+    for (auto [a, b, c] : Grid::prod(A, Grid::zip(B, C))) {
+        std::cout << a << ' ' << b << ' ' << c << std::endl;
     }
-*/
 
-    std::vector<int> E(5);
+    /*std::vector<int> E(5);
     std::vector<int> F(10);
 
     for (int i = 0; i < 5; ++i) {
@@ -53,10 +51,12 @@ int main()
         F[i + 5] = -i - 5;
     }
 
-    for (auto [e, f] : Grid::prod(E, Grid::arange(1, 10, 1))) {
+    std::cout << "hoge" << std::endl;
+
+    for (auto [e, f] : Grid::prod(E, F)) {
         std::cout << e << ' ' << f << std::endl;
     }
-
+*/
 
     return 0;
 }

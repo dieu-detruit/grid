@@ -21,7 +21,7 @@ public:
     using iterator = zip_iterator<Impl::copy_ref_info_t<types, Impl::get_iterator_t<types>>...>;
 
 private:
-    std::tuple<types&...> refs;
+    std::tuple<types...> refs;  // ref or copy
 
     template <std::size_t... I>
     inline iterator begin_impl(std::index_sequence<I...>)
@@ -35,7 +35,7 @@ private:
     }
 
 public:
-    Zip(types&... refs) : refs{refs...} {}
+    Zip(types... refs) : refs{refs...} {}
 
     iterator begin()
     {
