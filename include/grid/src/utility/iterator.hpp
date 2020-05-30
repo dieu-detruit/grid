@@ -2,9 +2,11 @@
 
 #include <iterator>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include <grid/src/utility/concept.hpp>
+#include <vector>
 
 namespace Grid::Impl
 {
@@ -44,5 +46,20 @@ struct get_iterator {
 
 template <class T>
 using get_iterator_t = typename get_iterator<T>::type;
+
+template <class Iterator>
+struct iterator_value_type {
+private:
+    using type_from_std_traits = typename std::iterator_traits<Iterator>::value_type;
+
+public:
+    using type = std::conditional_t<
+        std::is_same_v<type_from_std_traits, bool>,
+        std::vector<bool>::reference,
+        type_from_std_traits>;
+};
+
+template <class Iterator>
+using iterator_value_type_t = typename iterator_value_type<Iterator>::type;
 
 }  // namespace Grid::Impl

@@ -22,7 +22,7 @@ class zip_iterator
     std::tuple<std::remove_reference_t<itr_types>...> itrs;
 
 public:
-    using value_type = std::tuple<Impl::copy_ref_info_t<itr_types, typename std::iterator_traits<std::remove_reference_t<itr_types>>::value_type>...>;
+    using value_type = std::tuple<Impl::copy_ref_info_t<itr_types, Impl::iterator_value_type_t<std::remove_reference_t<itr_types>>>...>;
 
     zip_iterator(std::remove_reference_t<itr_types>... itrs) : itrs{itrs...} {}
 
