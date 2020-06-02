@@ -12,12 +12,13 @@ struct what_is_T;
 
 int main()
 {
-    // One Dimensional Zip test
 
     std::vector<double> A(20);
     std::array<double, 100> B;
     std::deque<double> C(30);
-    Grid::GridArray<double, double, 300> D{{1.0, 2.0}};
+    Grid::GridArray<bool, double, 300> D{{1.0, 2.0}};
+
+    static_assert(Grid::Bundle::is_bundle_iterator_v<decltype(Grid::zip(A, B).begin())>, "fuga");
 
     B.fill(0.0);
 
@@ -26,10 +27,10 @@ int main()
     }
 
     for (auto [a, b, c, d] : Grid::zip(A, B, C, D)) {
-        //what_is_T<decltype(b)> _;
+        //what_is_T<decltype(d)> _;
         b = a + 1;
         c = a * 2;
-        d = a / 2.0;
+        d = int(a) % 2 == 0;
     }
 
     for (auto [a, b, c, d] : Grid::zip(A, B, C, D)) {
@@ -38,25 +39,14 @@ int main()
 
     // Multi Dimensional Zip test
     std::cout << "multi dimension ----" << std::endl;
-    for (auto [a, b, c] : Grid::prod(A, Grid::zip(B, C))) {
-        std::cout << a << ' ' << b << ' ' << c << std::endl;
-    }
-
-    /*std::vector<int> E(5);
-    std::vector<int> F(10);
-
-    for (int i = 0; i < 5; ++i) {
-        E[i] = i;
-        F[i] = -i;
-        F[i + 5] = -i - 5;
+    for (auto [a, e, f] : Grid::prod(A, std::array<int, 2>{{1, 2}}, std::array<int, 2>{{334, 335}})) {
+        std::cout << a << ' ' << e << ' ' << f << std::endl;
     }
 
     std::cout << "hoge" << std::endl;
-
-    for (auto [e, f] : Grid::prod(E, F)) {
-        std::cout << e << ' ' << f << std::endl;
+    for (auto [a, b, c] : Grid::zip(A, Grid::prod(B, C))) {
+        std::cout << a << ' ' << b << ' ' << c << std::endl;
     }
-*/
 
     return 0;
 }

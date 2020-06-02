@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <utility>
 
+#include <grid/src/bundle/value_type.hpp>
 #include <grid/src/utility/iterator.hpp>
 #include <grid/src/utility/reference.hpp>
 
@@ -16,13 +17,25 @@ namespace Grid
 template <class... itr_types>
 class zip_iterator
 {
-    using index_sequence = std::make_index_sequence<sizeof...(itr_types)>;
+
+    using value_type_tuple = Bundle::value_type_tuple_t<itr_types...>;
+
+    template <std::size_t n>
+    using value_tuple_element = Bundle::value_type_tuple_element<n, itr_types...>;
+
+    static constexpr std::size_t zip_size = sizeof...(itr_types);
+    static constexpr std::size_t zip_expanded_size = std::tuple_size_v<value_type_tuple>;
+
+    using itr_tuple = std::tuple<std::remove_reference_t<itr_types>...>;
     using this_type = zip_iterator<itr_types...>;
 
-    std::tuple<std::remove_reference_t<itr_types>...> itrs;
+    using index_sequence = std::make_index_sequence<zip_size>;
+    using expanded_index_sequence = std::make_index_sequence<zip_expanded_size>;
+
+    itr_tuple itrs;
 
 public:
-    using value_type = std::tuple<Impl::copy_ref_info_t<itr_types, Impl::iterator_value_type_t<std::remove_reference_t<itr_types>>>...>;
+    using value_type = value_type_tuple;
 
     zip_iterator(std::remove_reference_t<itr_types>... itrs) : itrs{itrs...} {}
 
@@ -36,7 +49,7 @@ public:
     }
     decltype(auto) operator*()
     {
-        return get_ref_impl(index_sequence{});
+        return get_ref_impl(expanded_index_sequence{});
     }
     this_type& operator++()
     {
@@ -66,10 +79,25 @@ private:
     {
         return ((std::get<I>(itrs) == std::get<I>(right.itrs)) or ...);
     }
-    template <std::size_t... I>
-    auto get_ref_impl(std::index_sequence<I...>)
+    template <std::size_t n>
+    decltype(auto) get_value(itr_tuple& itrs)
     {
-        return value_type{*std::get<I>(itrs)...};
+        constexpr bool is_bundle_iterator = value_tuple_element<n>::is_bundle_iterator;
+        constexpr std::size_t global_index = value_tuple_element<n>::global_index;
+        constexpr std::size_t local_index = value_tuple_element<n>::local_index;
+
+        if constexpr (is_bundle_iterator) {
+            return std::get<local_index>(*std::get<global_index>(itrs));
+        } else {
+            return *std::get<global_index>(itrs);
+        }
+    };
+
+    template <std::size_t... I>
+    inline decltype(auto) get_ref_impl(std::index_sequence<I...>)
+    {
+        using namespace Impl;
+        return value_type_tuple{get_value<I>(itrs)...};
     }
     template <std::size_t... I>
     void pre_increment_impl(std::index_sequence<I...>)

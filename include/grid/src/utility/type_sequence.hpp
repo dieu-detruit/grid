@@ -72,7 +72,7 @@ struct homo_specialization<tmpl, T, 0, pack...> {
 template <template <class...> class tmpl, class T, std::size_t N>
 using homo_specialization_t = typename homo_specialization<tmpl, T, N>::type;
 
-// flatten tuple
+// flatten type sequence
 template <template <class...> class tmpl, class T>  // tuple type -> argument type itself
 auto make_single_specialization_impl(type_tag<T>)
 {

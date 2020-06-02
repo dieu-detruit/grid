@@ -7,10 +7,10 @@
 #include <type_traits>
 #include <utility>
 
+#include <grid/src/bundle/value_type.hpp>
 #include <grid/src/utility/iterator.hpp>
 #include <grid/src/utility/parameter_pack.hpp>
 #include <grid/src/utility/reference.hpp>
-#include <grid/src/utility/tuple.hpp>
 
 namespace Grid
 {
@@ -18,11 +18,10 @@ namespace Grid
 template <class... itr_types>
 class product_iterator
 {
-    // zip_iteratorが入ってたら渡すときは一列にtupleにしてあげないといけない
-    using value_type_tuple = Impl::flatten_tuple_t<typename std::iterator_traits<std::remove_reference_t<itr_types>>::value_type...>;
+    using value_type_tuple = Bundle::value_type_tuple_t<itr_types...>;
 
     template <std::size_t n>
-    using value_tuple_element = Impl::flatten_tuple_element<n, typename std::iterator_traits<std::remove_reference_t<itr_types>>::value_type...>;
+    using value_tuple_element = Bundle::value_type_tuple_element<n, itr_types...>;
 
     static constexpr std::size_t prod_size = sizeof...(itr_types);
     static constexpr std::size_t prod_expanded_size = std::tuple_size_v<value_type_tuple>;
@@ -92,11 +91,11 @@ private:
     template <std::size_t n>
     decltype(auto) get_value(itr_tuple& itrs)
     {
-        constexpr std::size_t is_tuple = value_tuple_element<n>::is_tuple;
+        constexpr bool is_bundle_iterator = value_tuple_element<n>::is_bundle_iterator;
         constexpr std::size_t global_index = value_tuple_element<n>::global_index;
         constexpr std::size_t local_index = value_tuple_element<n>::local_index;
 
-        if constexpr (is_tuple) {
+        if constexpr (is_bundle_iterator) {
             return std::get<local_index>(*std::get<global_index>(itrs));
         } else {
             return *std::get<global_index>(itrs);
@@ -122,7 +121,7 @@ private:
         static const std::array<std::function<bool(itr_tuple&, itr_tuple&, itr_tuple&)>, prod_size> incrementer{
             {[](itr_tuple& itrs, itr_tuple& begins, itr_tuple& ends) {
                 ++std::get<I>(itrs);
-                if constexpr (I != prod_size - 1) {
+                if constexpr (I == 0) {
                     return true;
                 }
                 if (std::get<I>(itrs) == std::get<I>(ends)) {
@@ -167,3 +166,15 @@ private:
     }
 };
 }  // namespace Grid
+
+namespace std
+{
+
+// Specialization of std::iterator_traits
+template <class... itr_types>
+struct iterator_traits<Grid::product_iterator<itr_types...>> {
+    using value_type = typename Grid::product_iterator<itr_types...>::value_type;
+    using iterator_category = typename std::bidirectional_iterator_tag;
+};
+
+}  // namespace std

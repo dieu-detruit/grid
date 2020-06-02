@@ -1,6 +1,7 @@
 #include <iostream>
 #include <random>
 
+#include <grid/bundle.hpp>
 #include <grid/linear.hpp>
 #include <grid/src/grid_vector/core.hpp>
 
@@ -16,7 +17,7 @@ int main()
 
     map.fill(0.0);
 
-    for (std::size_t n = 0; n < 10000000; ++n) {
+    for (std::size_t n = 0; n < 10000; ++n) {
         double x = dist_x(engine);
         double y = dist_y(engine);
 
@@ -25,9 +26,12 @@ int main()
         }
     }
 
-    for (auto [x, y] : map.lines()) {
-        std::cout << x << ' ' << y << ' ' << map[y][x] << std::endl;
+
+    /*
+    for (auto [x, y, m] : Grid::zip(map.lines(), map)) {
+        std::cout << x << ' ' << y << ' ' << m << std::endl;
     }
+    */
 
     return 0;
 }
