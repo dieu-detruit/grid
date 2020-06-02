@@ -34,6 +34,10 @@ public:
     {
         return _data.data();
     }
+    std::size_t size()
+    {
+        return _data.size();
+    }
 
     void swap(container_type& x)
     {
