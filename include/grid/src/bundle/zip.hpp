@@ -20,7 +20,7 @@ class Zip
 public:
     using iterator = zip_iterator<Impl::copy_ref_info_t<types, Impl::get_iterator_t<types>>...>;
 
-private:
+public:
     std::tuple<types...> refs;  // ref or copy
 
     template <std::size_t... I>

@@ -1,6 +1,8 @@
 #pragma once
 
+#include <__tuple>
 #include <algorithm>
+#include <iostream>
 #include <iterator>
 #include <stdexcept>
 #include <tuple>
@@ -89,7 +91,7 @@ private:
     }
 
     template <std::size_t n>
-    decltype(auto) get_value(itr_tuple& itrs)
+    auto get_value(itr_tuple& itrs) -> std::tuple_element_t<n, value_type_tuple>
     {
         constexpr bool is_bundle_iterator = value_tuple_element<n>::is_bundle_iterator;
         constexpr std::size_t global_index = value_tuple_element<n>::global_index;
@@ -118,19 +120,20 @@ private:
         }
         (void)((--std::get<I>(itrs), ...));
 
-        static const std::array<std::function<bool(itr_tuple&, itr_tuple&, itr_tuple&)>, prod_size> incrementer{
-            {[](itr_tuple& itrs, itr_tuple& begins, itr_tuple& ends) {
-                ++std::get<I>(itrs);
-                if constexpr (I == 0) {
-                    return true;
-                }
-                if (std::get<I>(itrs) == std::get<I>(ends)) {
-                    std::get<I>(itrs) = std::get<I>(begins);  // 繰り上がり
-                    return true;
-                } else {
-                    return false;
-                }
-            }...}};
+        static const std::array<std::function<bool(itr_tuple&, itr_tuple&, itr_tuple&)>, prod_size>
+            incrementer{
+                {[](itr_tuple& itrs, itr_tuple& begins, itr_tuple& ends) {
+                    ++std::get<I>(itrs);
+                    if constexpr (I == 0) {
+                        return true;
+                    }
+                    if (std::get<I>(itrs) == std::get<I>(ends)) {
+                        std::get<I>(itrs) = std::get<I>(begins);  // 繰り上がり
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }...}};
 
         for (auto& f : incrementer) {
             if (not f(itrs, begins, ends)) {

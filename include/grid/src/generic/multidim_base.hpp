@@ -20,14 +20,26 @@ public:
     template <class U, std::size_t n>
     friend struct multidim_proxy;
 
-    // iterator diverted from std::vector
-    using iterator = typename container_type::iterator;
-    using const_iterator = typename container_type::const_iterator;
+    // iterator diverted from STL container
+    using iterator = decltype(std::begin(_data));
+    using const_iterator = decltype(std::begin(_data));
 
-    iterator begin() { return _data.begin(); }
-    const_iterator begin() const { return _data.begin(); }
-    iterator end() { return _data.end(); }
-    const_iterator end() const { return _data.end(); }
+    iterator begin()
+    {
+        return std::begin(_data);
+    }
+    const_iterator begin() const
+    {
+        return std::cbegin(_data);
+    }
+    iterator end()
+    {
+        return std::end(_data);
+    }
+    const_iterator end() const
+    {
+        return std::cend(_data);
+    }
 
     // constructor
     multidim_container_base() : _data{} {}
@@ -50,7 +62,7 @@ public:
 
     inline void fill(value_type val)
     {
-        std::fill(_data.begin(), _data.end(), val);
+        std::fill(std::begin(_data), std::end(_data), val);
     }
 
     inline virtual std::size_t dim_size(std::size_t dim) const = 0;

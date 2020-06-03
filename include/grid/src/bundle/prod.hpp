@@ -23,7 +23,7 @@ public:
     using iterator = product_iterator<Impl::copy_ref_info_t<types, Impl::get_iterator_t<types>>...>;
     //using iterator = product_iterator<Impl::get_iterator_t<types>...>;
 
-private:
+public:
     std::tuple<types...> refs;
 
     template <std::size_t... I>

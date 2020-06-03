@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 #include <iterator>
 #include <tuple>
 #include <type_traits>
@@ -14,10 +12,12 @@
 namespace Grid
 {
 
+template <std::size_t n, std::size_t glob, std::size_t local, bool flag, class T>
+struct hoge;
+
 template <class... itr_types>
 class zip_iterator
 {
-
     using value_type_tuple = Bundle::value_type_tuple_t<itr_types...>;
 
     template <std::size_t n>
@@ -72,7 +72,6 @@ public:
         return *this;
     }
 
-
 private:
     template <std::size_t... I>
     bool comp_eq_impl(std::index_sequence<I...>, this_type right)
@@ -80,7 +79,7 @@ private:
         return ((std::get<I>(itrs) == std::get<I>(right.itrs)) or ...);
     }
     template <std::size_t n>
-    decltype(auto) get_value(itr_tuple& itrs)
+    auto get_value(itr_tuple& itrs) -> std::tuple_element_t<n, value_type_tuple>
     {
         constexpr bool is_bundle_iterator = value_tuple_element<n>::is_bundle_iterator;
         constexpr std::size_t global_index = value_tuple_element<n>::global_index;
@@ -94,11 +93,12 @@ private:
     };
 
     template <std::size_t... I>
-    inline decltype(auto) get_ref_impl(std::index_sequence<I...>)
+    inline auto get_ref_impl(std::index_sequence<I...>)
     {
         using namespace Impl;
         return value_type_tuple{get_value<I>(itrs)...};
     }
+
     template <std::size_t... I>
     void pre_increment_impl(std::index_sequence<I...>)
     {
