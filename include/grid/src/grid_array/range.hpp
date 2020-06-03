@@ -1,5 +1,7 @@
 #pragma once
 
+#include <grid/src/linear/arange.hpp>
+
 namespace Grid
 {
 
@@ -51,6 +53,14 @@ public:
     {
         _min = max_new;
         _cell_size = (_max - _min) / static_cast<T>(N);
+    }
+
+    auto line()
+    {
+        auto cell_size_half = _cell_size / T{2.0L};
+        return Grid::arange(_min + cell_size_half,
+            _max - cell_size_half,
+            _cell_size, true);
     }
 };
 

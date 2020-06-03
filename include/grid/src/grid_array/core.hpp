@@ -43,13 +43,12 @@ public:
     }
 
     template <std::size_t n>
-    auto line()
+    inline auto line()
     {
-        const auto& range = std::get<n>(ranges);
-        return arange(range.min(), range.max(), range.cell_size());
+        return std::get<n>(ranges).line();
     }
 
-    auto lines()
+    inline auto lines()
     {
         return lines_impl(std::make_index_sequence<rank>{});
     }
@@ -83,8 +82,7 @@ protected:
     template <std::size_t... I>
     inline auto lines_impl(std::index_sequence<I...>)
     {
-        return Grid::prod(
-            arange(std::get<I>(ranges).min(), std::get<I>(ranges).max(), std::get<I>(ranges).cell_size())...);
+        return Grid::prod(std::get<I>(ranges).line()...);
     }
 };
 

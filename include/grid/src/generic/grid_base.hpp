@@ -50,15 +50,6 @@ public:
     {
         _data.fill(value);
     }
-
-    inline virtual value_type sum()
-    {
-        return std::reduce(_data.begin(), _data.end(), static_cast<value_type>(0));
-    }
-    inline virtual value_type prod()
-    {
-        return std::reduce(_data.begin(), _data.end(), static_cast<value_type>(0), [](value_type acc, value_type x) { return acc * x; });
-    }
 };
 
 }  // namespace Grid

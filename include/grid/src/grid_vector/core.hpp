@@ -39,8 +39,7 @@ public:
     }
     auto line(std::size_t n)
     {
-        const auto& range = ranges.at(n);
-        return arange(range.min(), range.max(), range.cell_size());
+        return ranges.at(n).line();
     }
     auto lines()
     {
@@ -76,8 +75,7 @@ protected:
     template <std::size_t... I>
     inline auto lines_impl(std::index_sequence<I...>)
     {
-        return Grid::prod(
-            arange(ranges[I].min(), ranges[I].max(), ranges[I].cell_size())...);
+        return Grid::prod(ranges[I].line()...);
     }
 };
 
