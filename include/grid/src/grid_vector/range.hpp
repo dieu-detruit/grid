@@ -86,7 +86,7 @@ public:
 
     auto line()
     {
-        auto cell_size_half = _cell_size / T{2.0L};
+        auto cell_size_half = _cell_size / (T{2.0L} / T{1.0});
         return Grid::arange(_min + cell_size_half,
             _max - cell_size_half,
             _cell_size, true);
