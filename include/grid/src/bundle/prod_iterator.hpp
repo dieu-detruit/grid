@@ -1,6 +1,5 @@
 #pragma once
 
-#include <__tuple>
 #include <algorithm>
 #include <iostream>
 #include <iterator>
@@ -177,7 +176,6 @@ namespace std
 template <class... itr_types>
 struct iterator_traits<Grid::product_iterator<itr_types...>> {
     using value_type = typename Grid::product_iterator<itr_types...>::value_type;
-    using iterator_category = typename std::bidirectional_iterator_tag;
 };
 
 }  // namespace std

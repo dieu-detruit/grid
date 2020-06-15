@@ -1,5 +1,5 @@
 #include <array>
-#include <cstdarg>
+#include <utility>
 
 #include <grid/src/utility/parameter_pack.hpp>
 
@@ -8,14 +8,11 @@ namespace Grid::Impl
 
 template <std::size_t n, std::size_t... N>
 struct array_index_coef {
-    static_assert(0 <= n && n < sizeof...(N), "index is out of range");
+    static_assert(0UL <= n && n < sizeof...(N), "index is out of range");
     static constexpr std::size_t value
-        = get_nth_param_v<std::size_t, n + 1, N...> * array_index_coef<n + 1, N...>::value;
-};
-
-template <std::size_t... N>
-struct array_index_coef<sizeof...(N) - 1, N...> {
-    static constexpr std::size_t value = 1;
+        = n == sizeof...(N) - 1UL
+              ? 1UL
+              : get_nth_param_v<std::size_t, n + 1, N...> * array_index_coef<n + 1, N...>::value;
 };
 
 template <std::size_t... N>
