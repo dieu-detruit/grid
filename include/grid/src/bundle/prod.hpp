@@ -21,7 +21,6 @@ class Product
 {
 public:
     using iterator = product_iterator<Impl::copy_ref_info_t<types, Impl::get_iterator_t<types>>...>;
-    //using iterator = product_iterator<Impl::get_iterator_t<types>...>;
 
 public:
     std::tuple<types...> refs;
@@ -30,17 +29,17 @@ public:
     inline iterator begin_impl(std::index_sequence<I...>)
     {
         return iterator{
-            std::get<I>(refs).begin()...,
-            std::get<I>(refs).begin()...,
-            std::get<I>(refs).end()...};
+            std::begin(std::get<I>(refs))...,
+            std::begin(std::get<I>(refs))...,
+            std::end(std::get<I>(refs))...};
     }
     template <std::size_t... I>
     inline iterator end_impl(std::index_sequence<I...>)
     {
         return iterator{
-            std::get<I>(refs).end()...,
-            std::get<I>(refs).begin()...,
-            std::get<I>(refs).end()...};
+            std::end(std::get<I>(refs))...,
+            std::begin(std::get<I>(refs))...,
+            std::end(std::get<I>(refs))...};
     }
 
 public:

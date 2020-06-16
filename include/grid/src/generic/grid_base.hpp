@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iterator>
 #include <numeric>
 
 namespace Grid
@@ -22,10 +23,10 @@ public:
     using iterator = typename data_type::iterator;
     using const_iterator = typename data_type::const_iterator;
 
-    iterator begin() { return _data.begin(); }
-    const_iterator begin() const { return _data.begin(); }
-    iterator end() { return _data.end(); }
-    const_iterator end() const { return _data.end(); }
+    iterator begin() { return std::begin(_data); }
+    const_iterator begin() const { return std::begin(_data); }
+    iterator end() { return std::end(_data); }
+    const_iterator end() const { return std::end(_data); }
 
     template <class... Args>
     GridBase(Args... args) : _data(args...)

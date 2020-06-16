@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 #include <iterator>
 #include <tuple>
 #include <type_traits>
@@ -26,12 +24,12 @@ public:
     template <std::size_t... I>
     inline iterator begin_impl(std::index_sequence<I...>)
     {
-        return iterator{std::get<I>(refs).begin()...};
+        return iterator{std::begin(std::get<I>(refs))...};
     }
     template <std::size_t... I>
     inline iterator end_impl(std::index_sequence<I...>)
     {
-        return iterator{std::get<I>(refs).end()...};
+        return iterator{std::end(std::get<I>(refs))...};
     }
 
 public:
