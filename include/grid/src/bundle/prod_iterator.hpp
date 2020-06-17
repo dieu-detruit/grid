@@ -47,13 +47,13 @@ public:
         std::remove_reference_t<itr_types>... ends)
         : itrs{itrs...}, begins{begins...}, ends{ends...} {}
 
-    bool operator==(this_type right)
+    bool operator==(const this_type& right) const
     {
-        return comp_eq_impl(index_sequence{}, right);
+        return comp_eq_impl(right, index_sequence{});
     }
-    bool operator!=(this_type right)
+    bool operator!=(const this_type& right) const
     {
-        return not comp_eq_impl(index_sequence{}, right);
+        return not comp_eq_impl(right, index_sequence{});
     }
     decltype(auto) operator*()
     {
@@ -84,7 +84,7 @@ public:
 
 private:
     template <std::size_t... I>
-    inline bool comp_eq_impl(std::index_sequence<I...>, this_type right)
+    inline bool comp_eq_impl(const this_type& right, std::index_sequence<I...>) const
     {
         return ((std::get<I>(itrs) == std::get<I>(right.itrs)) and ...);
     }

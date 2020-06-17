@@ -36,21 +36,45 @@ class zip_iterator
 
 public:
     using value_type = value_type_tuple;
+    using difference_type = long int;
 
     zip_iterator(std::remove_reference_t<itr_types>... itrs) : itrs{itrs...} {}
 
-    bool operator==(this_type right)
+    // TODO イテレータのカテゴリでSFINAE使って分岐
+
+    // comparison
+    bool operator==(const this_type& right) const
     {
-        return comp_eq_impl(index_sequence{}, right);
+        return comp_eq_impl(right, index_sequence{});
     }
-    bool operator!=(this_type right)
+    bool operator!=(const this_type& right) const
     {
-        return not comp_eq_impl(index_sequence{}, right);
+        return not comp_eq_impl(right, index_sequence{});
     }
+    bool operator<(const this_type& right) const
+    {
+        return std::get<0>(itrs) < std::get<0>(right.itrs);
+    }
+    bool operator>(const this_type& right) const
+    {
+        return std::get<0>(itrs) > std::get<0>(right.itrs);
+    }
+    bool operator<=(const this_type& right) const
+    {
+        return std::get<0>(itrs) <= std::get<0>(right.itrs);
+    }
+    bool operator>=(const this_type& right) const
+    {
+        return std::get<0>(itrs) >= std::get<0>(right.itrs);
+    }
+
+    // access
     decltype(auto) operator*()
     {
-        return get_ref_impl(expanded_index_sequence{});
+        return ref_impl(expanded_index_sequence{});
     }
+
+    // increment
     this_type& operator++()
     {
         pre_increment_impl(index_sequence{});
@@ -61,6 +85,8 @@ public:
         post_increment_impl(index_sequence{});
         return *this;
     }
+
+    // decrement
     this_type& operator--()
     {
         pre_decrement_impl(index_sequence{});
@@ -72,14 +98,43 @@ public:
         return *this;
     }
 
+    // random access
+    this_type& operator+=(difference_type n)
+    {
+        add_substitution_impl(n, index_sequence{});
+        return *this;
+    }
+    this_type& operator-=(difference_type n)
+    {
+        sub_substitution_impl(n, index_sequence{});
+        return *this;
+    }
+    this_type operator+(difference_type n)
+    {
+        return add_impl(n, index_sequence{});
+    }
+    this_type operator-(difference_type n)
+    {
+        return sub_impl(n, index_sequence{});
+    }
+    difference_type operator-(const this_type& right) const
+    {
+        return std::get<0>(itrs) - std::get<0>(right.itrs);
+    }
+    auto operator[](difference_type n)
+    {
+        return random_access_impl(n, index_sequence{});
+    }
+
 private:
     template <std::size_t... I>
-    bool comp_eq_impl(std::index_sequence<I...>, this_type right)
+    bool comp_eq_impl(const this_type& right, std::index_sequence<I...>) const
     {
         return ((std::get<I>(itrs) == std::get<I>(right.itrs)) or ...);
     }
+
     template <std::size_t n>
-    auto get_value(itr_tuple& itrs) -> std::tuple_element_t<n, value_type_tuple>
+    inline auto element_ref(itr_tuple& itrs) -> std::tuple_element_t<n, value_type_tuple>
     {
         constexpr bool is_bundle_iterator = value_tuple_element<n>::is_bundle_iterator;
         constexpr std::size_t global_index = value_tuple_element<n>::global_index;
@@ -91,12 +146,11 @@ private:
             return *std::get<global_index>(itrs);
         }
     };
-
     template <std::size_t... I>
-    inline auto get_ref_impl(std::index_sequence<I...>)
+    inline auto ref_impl(std::index_sequence<I...>)
     {
         using namespace Impl;
-        return value_type_tuple{get_value<I>(itrs)...};
+        return value_type_tuple{element_ref<I>(itrs)...};
     }
 
     template <std::size_t... I>
@@ -119,7 +173,51 @@ private:
     {
         (void(std::get<I>(itrs)--), ...);
     }
+    template <std::size_t... I>
+    void add_substitution_impl(difference_type n, std::index_sequence<I...>)
+    {
+        (void(std::get<I>(itrs) += static_cast<typename std::iterator_traits<decltype(std::get<I>(itrs))>::difference_type>(n)), ...);
+    }
+    template <std::size_t... I>
+    void sub_substitution_impl(difference_type n, std::index_sequence<I...>)
+    {
+        (void(std::get<I>(itrs) -= static_cast<typename std::iterator_traits<decltype(std::get<I>(itrs))>::difference_type>(n)), ...);
+    }
+    template <std::size_t... I>
+    this_type add_impl(difference_type n, std::index_sequence<I...>)
+    {
+        return this_type{(std::get<I>(itrs) + static_cast<typename std::iterator_traits<std::remove_reference_t<decltype(std::get<I>(itrs))>>::difference_type>(n))...};
+    }
+    template <std::size_t... I>
+    this_type sub_impl(difference_type n, std::index_sequence<I...>)
+    {
+        return this_type{(std::get<I>(itrs) - static_cast<typename std::iterator_traits<decltype(std::get<I>(itrs))>::difference_type>(n))...};
+    }
+
+    // random access with []
+    template <std::size_t I>
+    inline auto element_random_access(itr_tuple& itrs, difference_type n) -> std::tuple_element_t<I, value_type_tuple>
+    {
+        constexpr bool is_bundle_iterator = value_tuple_element<I>::is_bundle_iterator;
+        constexpr std::size_t global_index = value_tuple_element<I>::global_index;
+        constexpr std::size_t local_index = value_tuple_element<I>::local_index;
+
+        using element_difference_type = typename std::iterator_traits<std::remove_reference_t<decltype(std::get<global_index>(itrs))>>::difference_type;
+
+        if constexpr (is_bundle_iterator) {
+            return std::get<local_index>(std::get<global_index>(itrs)[static_cast<element_difference_type>(n)]);
+        } else {
+            return *std::get<global_index>(itrs);
+        }
+    };
+    template <std::size_t... I>
+    inline auto random_access_impl(difference_type n, std::index_sequence<I...>)
+    {
+        using namespace Impl;
+        return value_type_tuple{element_random_access<I>(itrs, n)...};
+    }
 };
+
 
 }  // namespace Grid
 
@@ -130,6 +228,8 @@ namespace std
 template <class... itr_types>
 struct iterator_traits<Grid::zip_iterator<itr_types...>> {
     using value_type = typename Grid::zip_iterator<itr_types...>::value_type;
+    using difference_type = typename Grid::zip_iterator<itr_types...>::difference_type;
+    using iterator_category = std::random_access_iterator_tag;
 };
 
 }  // namespace std
