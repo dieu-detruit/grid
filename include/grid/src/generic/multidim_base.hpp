@@ -1,7 +1,10 @@
 #pragma once
 
 #include <algorithm>
+#include <execution>
 #include <iterator>
+
+#include <grid/parallel.hpp>
 
 namespace Grid::Impl
 {
@@ -63,7 +66,11 @@ public:
 
     inline void fill(value_type val)
     {
-        std::fill(std::begin(_data), std::end(_data), val);
+        if (to_parallelize) {
+            std::fill(std::execution::par_unseq, std::begin(_data), std::end(_data), val);
+        } else {
+            std::fill(std::begin(_data), std::end(_data), val);
+        }
     }
 
     inline virtual std::size_t dim_size(std::size_t dim) const = 0;

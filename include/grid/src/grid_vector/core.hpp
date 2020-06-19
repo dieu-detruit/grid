@@ -98,4 +98,28 @@ struct grid_vector_wrapper {
 template <class value_type, typename measure_type, std::size_t rank>
 using GridVector = typename Impl::grid_vector_wrapper<value_type, measure_type, rank>::type;
 
+namespace Impl
+{
+template <class T>
+struct is_grid_vector : public std::false_type {
+};
+template <class value_type, class measure_type, std::size_t rank, class... range_types>
+struct is_grid_vector<GridVectorImpl<value_type, measure_type, rank, range_types...>> : public std::true_type {
+};
+template <class T>
+inline constexpr bool is_grid_vector_v = is_grid_vector<T>::value;
+
+template <class T>
+struct get_rank {
+    static constexpr std::size_t value = 0;
+};
+template <class value_type, class measure_type, std::size_t rank, class... range_types>
+struct get_rank<GridVectorImpl<value_type, measure_type, rank, range_types...>> {
+    static constexpr std::size_t value = rank;
+};
+template <class T>
+inline constexpr std::size_t get_rank_v = get_rank<T>::value;
+
+}  // namespace Impl
+
 }  // namespace Grid
