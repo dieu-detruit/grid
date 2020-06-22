@@ -13,10 +13,10 @@ auto sequencial_specialize_impl(type_sequence_tag<types...>)
 }
 template <template <class...> class tmpl, class sequence_tag>
 struct sequencial_specialize {
-    using type = typename decltype(sequencial_specialize_impl<tmpl>(sequence_tag{}))::type;
+    using type = decltype(sequencial_specialize_impl<tmpl>(sequence_tag{}))::type;
 };
 template <template <class...> class tmpl, class sequence_tag>
-using sequencial_specialize_t = typename sequencial_specialize<tmpl, sequence_tag>::type;
+using sequencial_specialize_t = sequencial_specialize<tmpl, sequence_tag>::type;
 
 // concat type sequence
 template <class... types1, class... types2>
@@ -29,7 +29,7 @@ struct concat_type_sequence {
     using type = decltype(concat_type_sequence_impl(sequence1{}, sequence2{}));
 };
 template <class sequence1, class sequence2>
-using concat_type_sequence_t = typename concat_type_sequence<sequence1, sequence2>::type;
+using concat_type_sequence_t = concat_type_sequence<sequence1, sequence2>::type;
 
 // is specialiazation with type sequence
 template <class T, template <class...> class tmpl>
@@ -52,17 +52,17 @@ constexpr auto get_concat_specialization_tag(type_tag<tmpl<left_types...>>, type
 
 template <template <class...> class tmpl, class Spec1, class Spec2>
 struct concat_specialization {
-    using type = typename decltype(get_concat_specialization_tag<tmpl>(
+    using type = decltype(get_concat_specialization_tag<tmpl>(
         type_tag<Spec1>{},
         type_tag<Spec2>{}))::type;
 };
 template <template <class...> class tmpl, class Spec1, class Spec2>
-using concat_specialization_t = typename concat_specialization<tmpl, Spec1, Spec2>::type;
+using concat_specialization_t = concat_specialization<tmpl, Spec1, Spec2>::type;
 
 // specialization with duplicated type
 template <template <class...> class tmpl, class T, std::size_t N, class... pack>
 struct homo_specialization {
-    using type = typename homo_specialization<tmpl, T, N - 1, T, pack...>::type;
+    using type = homo_specialization<tmpl, T, N - 1, T, pack...>::type;
 };
 template <template <class...> class tmpl, class T, class... pack>
 struct homo_specialization<tmpl, T, 0, pack...> {
@@ -70,7 +70,7 @@ struct homo_specialization<tmpl, T, 0, pack...> {
 };
 
 template <template <class...> class tmpl, class T, std::size_t N>
-using homo_specialization_t = typename homo_specialization<tmpl, T, N>::type;
+using homo_specialization_t = homo_specialization<tmpl, T, N>::type;
 
 // flatten type sequence
 template <template <class...> class tmpl, class T>  // tuple type -> argument type itself
@@ -81,10 +81,10 @@ auto make_single_specialization_impl(type_tag<T>)
 
 template <template <class...> class tmpl, class T>
 struct make_single_specialization {
-    using type = typename decltype(make_single_specialization_impl<tmpl>(type_tag<T>{}))::type;
+    using type = decltype(make_single_specialization_impl<tmpl>(type_tag<T>{}))::type;
 };
 template <template <class...> class tmpl, class T>
-using make_single_specialization_t = typename make_single_specialization<tmpl, T>::type;
+using make_single_specialization_t = make_single_specialization<tmpl, T>::type;
 
 template <template <class...> class tmpl, class head, class... types>
 struct flatten_specialization {
@@ -100,7 +100,7 @@ struct flatten_specialization<tmpl, T> {
     using type = make_single_specialization_t<tmpl, T>;
 };
 template <template <class...> class tmpl, class... types>
-using flatten_specialization_t = typename flatten_specialization<tmpl, types...>::type;
+using flatten_specialization_t = flatten_specialization<tmpl, types...>::type;
 
 
 // sequence with no duplicate element

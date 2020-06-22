@@ -18,15 +18,15 @@ inline constexpr bool is_all_integral_v = is_all_integral<types...>::value;
 // Get the type which has the maximum size in parameters
 template <class T, class U, class... types>
 struct get_max_size_type {
-    using type = typename get_max_size_type<typename get_max_size_type<T, U>::type, types...>::type;
+    using type = get_max_size_type<typename get_max_size_type<T, U>::type, types...>::type;
 };
 template <class T, class U>
 struct get_max_size_type<T, U> {
-    using type = typename std::conditional<(sizeof(T) > sizeof(U)), T, U>::type;
+    using type = std::conditional<(sizeof(T) > sizeof(U)), T, U>::type;
 };
 
 template <class... types>
-using get_max_size_type_t = typename get_max_size_type<types...>::type;
+using get_max_size_type_t = get_max_size_type<types...>::type;
 
 // Get the Nth parameter
 template <class T, std::size_t n, T first, T... params>
@@ -68,7 +68,7 @@ struct get_nth_type {
     using type = std::tuple_element_t<n, std::tuple<types...>>;
 };
 template <std::size_t n, class... types>
-using get_nth_type_t = typename get_nth_type<n, types...>::type;
+using get_nth_type_t = get_nth_type<n, types...>::type;
 
 // Index sequence stack
 template <std::size_t... I>
@@ -85,11 +85,11 @@ struct reverse_index_sequence_impl {
 };
 template <class sequence_pile, std::size_t first, std::size_t... I>
 struct reverse_index_sequence_impl<sequence_pile, first, I...> {
-    using type = typename reverse_index_sequence_impl<typename sequence_pile::template push<first>, I...>::type;
+    using type = reverse_index_sequence_impl<typename sequence_pile::template push<first>, I...>::type;
 };
 template <class sequence_pile>
 struct reverse_index_sequence_impl<sequence_pile> {
-    using type = typename sequence_pile::type;
+    using type = sequence_pile::type;
 };
 
 template <std::size_t first, std::size_t... I>

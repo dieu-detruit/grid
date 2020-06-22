@@ -21,14 +21,14 @@ template <class Tuple1, class Tuple2>
 struct concat_tuple : public concat_specialization<std::tuple, Tuple1, Tuple2> {
 };
 template <class Tuple1, class Tuple2>
-using concat_tuple_t = typename concat_tuple<Tuple1, Tuple2>::type;
+using concat_tuple_t = concat_tuple<Tuple1, Tuple2>::type;
 
 // dynamic_tuple
 template <class T, std::size_t N>
 struct dynamic_tuple : public homo_specialization<std::tuple, T, N> {
 };
 template <class T, std::size_t N>
-using dynamic_tuple_t = typename dynamic_tuple<T, N>::type;
+using dynamic_tuple_t = dynamic_tuple<T, N>::type;
 
 // get product of tuple elements
 template <class Tuple, std::size_t... I>
@@ -47,13 +47,13 @@ template <class T>
 struct make_flatten_tuple : public make_single_specialization<std::tuple, T> {
 };
 template <class T>
-using make_flatten_tuple_t = typename make_flatten_tuple<T>::type;
+using make_flatten_tuple_t = make_flatten_tuple<T>::type;
 
 template <class... types>
 struct flatten_tuple : public flatten_specialization<std::tuple, types...> {
 };
 template <class... types>
-using flatten_tuple_t = typename flatten_tuple<types...>::type;
+using flatten_tuple_t = flatten_tuple<types...>::type;
 
 // extended tuple size
 template <class T>
@@ -114,13 +114,13 @@ template <class sequence_tag>
 struct sequence_to_tuple : public sequencial_specialize<std::tuple, sequence_tag> {
 };
 template <class sequence_tag>
-using sequence_to_tuple_t = typename sequence_to_tuple<sequence_tag>::type;
+using sequence_to_tuple_t = sequence_to_tuple<sequence_tag>::type;
 
 // tuple which has no coupled type element
 template <class Tuple>
 struct unique_tuple : public unique_specialization<std::tuple, Tuple> {
 };
 template <class Tuple>
-using unique_tuple_t = typename unique_tuple<Tuple>::type;
+using unique_tuple_t = unique_tuple<Tuple>::type;
 
 }  // namespace Grid::Impl

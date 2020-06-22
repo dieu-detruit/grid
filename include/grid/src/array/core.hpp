@@ -21,7 +21,7 @@ protected:
     using base_type = typename this_type::base_type;
 
 public:
-    using container_type = typename this_type::container_type;
+    using container_type = this_type::container_type;
     static constexpr std::size_t rank = base_type::rank;
 
     multidim_array() {}

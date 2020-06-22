@@ -76,7 +76,7 @@ struct value_type_tuple {
 };
 template <class sequence, class first, class... itr_types>
 struct value_type_tuple<sequence, first, itr_types...> {
-    using type = typename value_type_tuple<decltype(concat_unpacked_value_type(sequence{}, Impl::type_sequence_tag<first>{})), itr_types...>::type;
+    using type = value_type_tuple<decltype(concat_unpacked_value_type(sequence{}, Impl::type_sequence_tag<first>{})), itr_types...>::type;
 };
 template <class sequence>
 struct value_type_tuple<sequence> {
@@ -84,7 +84,7 @@ struct value_type_tuple<sequence> {
 };
 
 template <class... itr_types>
-using value_type_tuple_t = typename value_type_tuple<Impl::type_sequence_tag<>, itr_types...>::type;
+using value_type_tuple_t = value_type_tuple<Impl::type_sequence_tag<>, itr_types...>::type;
 
 // value type size
 template <class Iterator>

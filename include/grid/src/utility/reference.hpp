@@ -24,6 +24,6 @@ struct copy_ref_info<src_type, std::vector<bool>::reference> {
 
 
 template <class src_type, class dst_type>
-using copy_ref_info_t = typename copy_ref_info<src_type, dst_type>::type;
+using copy_ref_info_t = copy_ref_info<src_type, dst_type>::type;
 
 }  // namespace Grid::Impl

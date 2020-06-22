@@ -62,7 +62,7 @@ inline void ifftshift_impl(Iterator begin, Iterator end,
         Impl::fftshift_impl(begin, end, N, M);
 
     } else {
-        // else -> (N - gcd(N - rounddown(N/2)) * (M - gcd(M - rounddown(M/2))
+        // else
         // Recursive Juggling Algorithm
         // Rotate lines and elements in each line in this order
 

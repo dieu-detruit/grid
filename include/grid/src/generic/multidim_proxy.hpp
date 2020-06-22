@@ -10,7 +10,7 @@ class multidim_proxy
     std::size_t index_proxy;
 
 public:
-    using value_type = typename multidim_type::value_type;
+    using value_type = multidim_type::value_type;
 
     multidim_proxy(multidim_type& ref, std::size_t index_proxy)
         : ref(ref), index_proxy(index_proxy) {}

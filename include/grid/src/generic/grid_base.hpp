@@ -2,6 +2,7 @@
 
 #include <iterator>
 #include <numeric>
+#include <type_traits>
 
 namespace Grid
 {
@@ -12,7 +13,7 @@ class GridBase
 protected:
     data_type _data;
 
-    using container_type = typename data_type::container_type;
+    using container_type = data_type::container_type;
 
 public:
     using base_type = GridBase<value_type, measure_type, rank, data_type>;
@@ -20,8 +21,8 @@ public:
     using value_t = value_type;
     using measure_t = measure_type;
 
-    using iterator = typename data_type::iterator;
-    using const_iterator = typename data_type::const_iterator;
+    using iterator = data_type::iterator;
+    using const_iterator = data_type::const_iterator;
 
     iterator begin() { return std::begin(_data); }
     const_iterator begin() const { return std::begin(_data); }

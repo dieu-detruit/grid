@@ -58,7 +58,7 @@ inline void fftshift_impl(Iterator begin, Iterator end,
     using index_t = typename std::iterator_traits<Iterator>::difference_type;
 
     if (N % 2 == 0) {
-        // N = M = a even number -> N * N / 2 times
+        // N = M = a even number
 
         const index_t half = N / 2;
 
@@ -83,7 +83,7 @@ inline void fftshift_impl(Iterator begin, Iterator end,
             std::for_each(std::execution::seq, offset_list.begin(), offset_list.end(), process);
         }
     } else {
-        // else -> (N - gcd(N - roundup(N/2)) * (M - gcd(M - roundup(M/2))
+        // else
         // Recursive Juggling Algorithm
         // Rotate lines and elements in each line in this order
         //

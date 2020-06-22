@@ -18,7 +18,7 @@ template <class T, std::size_t rank>
 struct multidim_vector : multidim_container_base<T, std::vector<T>, rank> {
 protected:
     using this_type = multidim_vector<T, rank>;
-    using base_type = typename this_type::base_type;
+    using base_type = this_type::base_type;
 
     std::array<std::size_t, rank> sizes;
 

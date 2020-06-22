@@ -4,8 +4,6 @@
 #include <type_traits>
 #include <utility>
 
-#include <grid/src/utility/concept.hpp>
-
 namespace Grid::Impl
 {
 
@@ -15,6 +13,6 @@ struct get_iterator {
 };
 
 template <class T>
-using get_iterator_t = typename get_iterator<T>::type;
+using get_iterator_t = get_iterator<T>::type;
 
 }  // namespace Grid::Impl
