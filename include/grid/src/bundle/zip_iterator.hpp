@@ -12,9 +12,6 @@
 namespace Grid
 {
 
-template <std::size_t n, std::size_t glob, std::size_t local, bool flag, class T>
-struct hoge;
-
 template <class... itr_types>
 class zip_iterator
 {
@@ -39,8 +36,6 @@ public:
     using difference_type = long int;
 
     zip_iterator(std::remove_reference_t<itr_types>... itrs) : itrs{itrs...} {}
-
-    // TODO イテレータのカテゴリでSFINAE使って分岐
 
     // comparison
     bool operator==(const this_type& right) const
@@ -68,7 +63,7 @@ public:
         return std::get<0>(itrs) >= std::get<0>(right.itrs);
     }
 
-    // access
+    // value access
     decltype(auto) operator*()
     {
         return ref_impl(expanded_index_sequence{});
@@ -86,7 +81,7 @@ public:
         return *this;
     }
 
-    // decrement
+    // decrement(TODO limit to bidirectional iterator)
     this_type& operator--()
     {
         pre_decrement_impl(index_sequence{});
@@ -98,7 +93,7 @@ public:
         return *this;
     }
 
-    // random access
+    // random shift and access(TODO limit to random access iterator)
     this_type& operator+=(difference_type n)
     {
         add_substitution_impl(n, index_sequence{});
@@ -133,6 +128,7 @@ private:
         return ((std::get<I>(itrs) == std::get<I>(right.itrs)) or ...);
     }
 
+    // value access
     template <std::size_t n>
     inline auto element_ref(itr_tuple& itrs) -> std::tuple_element_t<n, value_type_tuple>
     {
@@ -153,6 +149,7 @@ private:
         return value_type_tuple{element_ref<I>(itrs)...};
     }
 
+    // increment
     template <std::size_t... I>
     void pre_increment_impl(std::index_sequence<I...>)
     {
@@ -163,6 +160,8 @@ private:
     {
         (void(std::get<I>(itrs)++), ...);
     }
+
+    // decrement
     template <std::size_t... I>
     void pre_decrement_impl(std::index_sequence<I...>)
     {
@@ -173,6 +172,8 @@ private:
     {
         (void(std::get<I>(itrs)--), ...);
     }
+
+    // random shift
     template <std::size_t... I>
     void add_substitution_impl(difference_type n, std::index_sequence<I...>)
     {
@@ -194,7 +195,7 @@ private:
         return this_type{(std::get<I>(itrs) - static_cast<typename std::iterator_traits<decltype(std::get<I>(itrs))>::difference_type>(n))...};
     }
 
-    // random access with []
+    // random access
     template <std::size_t I>
     inline auto element_random_access(itr_tuple& itrs, difference_type n) -> std::tuple_element_t<I, value_type_tuple>
     {

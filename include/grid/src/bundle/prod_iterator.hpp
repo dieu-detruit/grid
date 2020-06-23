@@ -1,9 +1,7 @@
 #pragma once
 
 #include <algorithm>
-#include <iostream>
 #include <iterator>
-#include <stdexcept>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -47,6 +45,7 @@ public:
         std::remove_reference_t<itr_types>... ends)
         : itrs{itrs...}, begins{begins...}, ends{ends...} {}
 
+    // comparison
     bool operator==(const this_type& right) const
     {
         return comp_eq_impl(right, index_sequence{});
@@ -55,11 +54,30 @@ public:
     {
         return not comp_eq_impl(right, index_sequence{});
     }
-    decltype(auto) operator*()
+    bool operator>(const this_type& right) const
     {
-        return get_ref_impl(expanded_index_sequence{});
+        return comp_greater_impl(right, index_sequence{});
+    }
+    bool operator<(const this_type& right) const
+    {
+        return comp_less_impl(right, index_sequence{});
+    }
+    bool operator>=(const this_type& right) const
+    {
+        return not comp_less_impl(right, index_sequence{});
+    }
+    bool operator<=(const this_type& right) const
+    {
+        return not comp_greater_impl(right, index_sequence{});
     }
 
+    // value access
+    decltype(auto) operator*()
+    {
+        return ref_impl(expanded_index_sequence{});
+    }
+
+    // increment
     this_type& operator++()
     {
         increment_impl(reversed_index_sequence{});
@@ -70,6 +88,8 @@ public:
         increment_impl(reversed_index_sequence{});
         return *this;
     }
+
+    // decrement
     this_type& operator--()
     {
         decrement_impl(reversed_index_sequence{});
@@ -83,14 +103,26 @@ public:
 
 
 private:
+    // comparison
     template <std::size_t... I>
     inline bool comp_eq_impl(const this_type& right, std::index_sequence<I...>) const
     {
         return ((std::get<I>(itrs) == std::get<I>(right.itrs)) and ...);
     }
+    template <std::size_t... I>
+    inline bool comp_geq_impl(const this_type& right, std::index_sequence<I...>) const
+    {
+        return ((std::get<I>(itrs) >= std::get<I>(right.itrs)) and ...);
+    }
+    template <std::size_t... I>
+    inline bool comp_leq_impl(const this_type& right, std::index_sequence<I...>) const
+    {
+        return ((std::get<I>(itrs) <= std::get<I>(right.itrs)) and ...);
+    }
 
+    // value access
     template <std::size_t n>
-    auto get_value(itr_tuple& itrs) -> std::tuple_element_t<n, value_type_tuple>
+    auto element_ref(itr_tuple& itrs) -> std::tuple_element_t<n, value_type_tuple>
     {
         constexpr bool is_bundle_iterator = value_tuple_element<n>::is_bundle_iterator;
         constexpr std::size_t global_index = value_tuple_element<n>::global_index;
@@ -104,10 +136,10 @@ private:
     };
 
     template <std::size_t... I>
-    inline decltype(auto) get_ref_impl(std::index_sequence<I...>)
+    inline decltype(auto) ref_impl(std::index_sequence<I...>)
     {
         using namespace Impl;
-        return value_type_tuple{get_value<I>(itrs)...};
+        return value_type_tuple{element_ref<I>(itrs)...};
     }
 
     template <std::size_t... I>

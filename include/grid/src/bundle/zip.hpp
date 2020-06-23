@@ -53,5 +53,11 @@ auto zip(types&&... refs)
 {
     return Zip<types...>{refs...};
 }
+// only one argument -> return itself
+template <class T>
+decltype(auto) zip(T&& ref)
+{
+    return ref;
+}
 
 }  // namespace Grid

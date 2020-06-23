@@ -63,6 +63,11 @@ auto prod(types&&... refs)
 {
     return Product<types...>{refs...};
 }
-
+// only one argument -> return itself
+template <class T>
+decltype(auto) prod(T&& ref)
+{
+    return ref;
+}
 
 }  // namespace Grid
