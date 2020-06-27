@@ -28,7 +28,7 @@ void ifftshift(Grid::GridArray<value_type, measure_type, N>& vec)
 template <class grid_vector, std::enable_if_t<Impl::is_grid_vector_v<grid_vector> and Impl::get_rank_v<grid_vector> == 1, std::nullptr_t> = nullptr>
 void ifftshift(grid_vector& vec)
 {
-    std::size_t N = vec.range(0).N();
+    std::size_t N = vec.range(0).N;
     std::size_t left_size = N / 2;
     if (to_parallelize) {
         std::rotate(std::execution::par_unseq, vec.begin(), vec.begin() + left_size, vec.end());
@@ -117,8 +117,8 @@ void ifftshift(grid_vector& vec)
 {
     using index_t = typename std::iterator_traits<decltype(vec.begin())>::difference_type;
 
-    const index_t N = vec.range(0).N();
-    const index_t M = vec.range(1).N();
+    const index_t N = vec.range(0).N;
+    const index_t M = vec.range(1).N;
 
     Impl::ifftshift_impl(vec.begin(), vec.end(), N, M);
 }

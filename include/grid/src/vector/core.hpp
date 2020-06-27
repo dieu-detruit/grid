@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <concepts>
 #include <tuple>
 #include <vector>
 
@@ -28,8 +29,8 @@ public:
     multidim_vector(this_type&& r) : base_type{std::move(r._data)}, sizes(std::move(r.sizes)) {}
     multidim_vector(const this_type& l) : base_type{l._data}, sizes(l.sizes) {}
 
-    template <class... U>
-    multidim_vector(U... size) : sizes{static_cast<std::size_t>(size)...}
+    template <std::unsigned_integral... U>
+    constexpr multidim_vector(U... size) : sizes{static_cast<std::size_t>(size)...}
     {
         static_assert(rank == sizeof...(size), "argument number must match the rank of vector");
         static_assert(is_all_integral_v<U...>, "The arguments must be integral");
@@ -37,29 +38,22 @@ public:
         this->_data.resize(whole_size);
     }
 
-    template <class U>
-    multidim_vector(std::array<U, rank> sizes) : sizes{sizes}
+    // resize
+    template <std::unsigned_integral... U>
+    void resize(U... size)
     {
-        static_assert(std::is_integral_v<U>, "The argument must be integral");
-        std::size_t whole_size = 1;
-        for (auto& size : sizes) {
-            whole_size *= size;
-        }
-        this->_data.resize(whole_size);
-    }
+        static_assert(sizeof...(size) == rank, "The number of argument must match the dimension rank");
+        sizes = std::array<std::size_t, rank>{{size...}};
 
-    multidim_vector(dynamic_tuple<std::size_t, rank> sizes) : sizes{tuple_to_array(sizes)}
-    {
-        std::size_t whole_size = tuple_product(sizes);
+        std::size_t whole_size = (... * size);
         this->_data.resize(whole_size);
     }
 
     // random access
-    template <class... U>
+    template <std::unsigned_integral... U>
     inline T& at(U... subscript)
     {
         static_assert(sizeof...(subscript) == rank, "The number of argument must match the dimension rank");
-        static_assert(is_all_integral_v<U...>, "The arguments must be integral");
         return this->_data.at(vector_index<rank>::index(sizes, subscript...));
     }
 

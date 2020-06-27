@@ -33,7 +33,16 @@ public:
     GridVectorImpl(range_types... ranges)
         : ranges{{ranges...}}, base_type(static_cast<std::size_t>(ranges)...) {}
 
-    decltype(auto) range(std::size_t n) const
+
+    template <class... T>
+    void resize(DynamicRange<T>... new_ranges)
+    {
+        static_assert(std::conjunction_v<std::is_same<T, measure_type>...>, "");
+        this->_data.resize(static_cast<std::size_t>(new_ranges)...);
+        ranges = std::array<DynamicRange<measure_type>, rank>{{new_ranges...}};
+    }
+
+    auto range(std::size_t n) const
     {
         return ranges.at(n);
     }

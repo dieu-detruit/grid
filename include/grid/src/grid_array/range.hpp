@@ -5,17 +5,20 @@
 namespace Grid
 {
 
-template <class T, std::size_t N>
+template <class T, std::size_t _N>
 struct StaticRange {
-protected:
-    T _min;
-    T _max;
+    T min;
+    T max;
 
-    T _cell_size;
+    T cell_size;
 
-public:
+    static constexpr std::size_t N = _N;
+
     constexpr StaticRange(T min, T max)
-        : _min(min), _max(max), _cell_size((_max - _min) / static_cast<T>(N)) {}
+        : min(min), max(max), cell_size((max - min) / static_cast<T>(N)) {}
+
+    // Cast operator to std::size_t
+    operator std::size_t() { return N; }
 
     /*
      * Policy:
@@ -24,43 +27,40 @@ public:
      *
      *      each divided cell has the values satisfying
      *
-     *          cell_min <= x < cell_max
+     *          cellmin <= x < cellmax
      *
-     *      but only if cell_max == max
+     *      but only if cellmax == max
      *
-     *          cell_min <= x <= cell_max
+     *          cellmin <= x <= cellmax
      *
      */
     inline constexpr std::size_t quantize(T x) const
     {
-        if (x == _max) {
+        if (x == max) {
             return N - 1;
         } else {
-            return static_cast<std::size_t>((x - _min) / _cell_size);
+            return static_cast<std::size_t>((x - min) / cell_size);
         }
     }
 
-    inline T min() const { return _min; }
-    inline T max() const { return _max; }
-    inline T cell_size() const { return _cell_size; }
-
-    inline void min(T min_new)
+    inline void recalc()
     {
-        _min = min_new;
-        _cell_size = (_max - _min) / static_cast<T>(N);
+        cell_size = (max - min) / static_cast<T>(_N);
     }
-    inline void max(T max_new)
+
+    void resize(T _min, T _max)
     {
-        _min = max_new;
-        _cell_size = (_max - _min) / static_cast<T>(N);
+        min = _min;
+        max = _max;
+        recalc();
     }
 
     auto line()
     {
-        auto cell_size_half = _cell_size / (T{2.0L} / T{1.0});
-        return Grid::arange(_min + cell_size_half,
-            _max - cell_size_half,
-            _cell_size, true);
+        auto cell_size_half = cell_size / (T{2.0L} / T{1.0});
+        return Grid::arange(min + cell_size_half,
+            max - cell_size_half,
+            cell_size, true);
     }
 };
 
