@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <concepts>
 #include <tuple>
 #include <vector>
@@ -37,6 +38,12 @@ public:
         std::size_t whole_size = (... * size);
         this->_data.resize(whole_size);
     }
+    constexpr multidim_vector(std::size_t size)
+    {
+        sizes.fill(size);
+        std::size_t whole_size = std::pow(size, rank);
+        this->_data.resize(whole_size);
+    }
 
     // resize
     template <std::unsigned_integral... U>
@@ -46,6 +53,12 @@ public:
         sizes = std::array<std::size_t, rank>{{size...}};
 
         std::size_t whole_size = (... * size);
+        this->_data.resize(whole_size);
+    }
+    void resize(std::size_t size)
+    {
+        sizes.fill(size);
+        std::size_t whole_size = std::pow(size, rank);
         this->_data.resize(whole_size);
     }
 

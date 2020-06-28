@@ -30,9 +30,17 @@ protected:
     std::array<DynamicRange<measure_type>, rank> ranges;
 
 public:
+    using base_type::measure_t;
+    using base_type::value_t;
+
     GridVectorImpl(range_types... ranges)
         : ranges{{ranges...}}, base_type(static_cast<std::size_t>(ranges)...) {}
 
+    GridVectorImpl(DynamicRange<measure_type> range)
+        : base_type(static_cast<std::size_t>(range))
+    {
+        ranges.fill(range);
+    }
 
     template <class... T>
     void resize(DynamicRange<T>... new_ranges)
@@ -40,6 +48,12 @@ public:
         static_assert(std::conjunction_v<std::is_same<T, measure_type>...>, "");
         this->_data.resize(static_cast<std::size_t>(new_ranges)...);
         ranges = std::array<DynamicRange<measure_type>, rank>{{new_ranges...}};
+    }
+    // 超立方領域にする
+    void resize(DynamicRange<measure_type> new_range)
+    {
+        this->_data.resize(static_cast<std::size_t>(new_range));
+        ranges.fill(new_range);
     }
 
     auto range(std::size_t n) const
