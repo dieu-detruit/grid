@@ -12,7 +12,7 @@ struct DynamicRange {
     T cell_size;
 
     constexpr DynamicRange(T min, T max, std::size_t N)
-        : min(min), max(max), N(N), cell_size((max - min) / static_cast<T>(N)) {}
+        : min(min), max(max), N(N), cell_size((max - min) / N) {}
 
     // Cast operator to std::size_t
     operator std::size_t() { return N; }
@@ -42,7 +42,7 @@ struct DynamicRange {
 
     inline void recalc()
     {
-        cell_size = (max - min) / static_cast<T>(N);
+        cell_size = (max - min) / N;
     }
 
     void resize(T _min, T _max)

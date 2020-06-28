@@ -15,7 +15,7 @@ struct StaticRange {
     static constexpr std::size_t N = _N;
 
     constexpr StaticRange(T min, T max)
-        : min(min), max(max), cell_size((max - min) / static_cast<T>(N)) {}
+        : min(min), max(max), cell_size((max - min) / N) {}
 
     // Cast operator to std::size_t
     operator std::size_t() { return N; }
@@ -45,7 +45,7 @@ struct StaticRange {
 
     inline void recalc()
     {
-        cell_size = (max - min) / static_cast<T>(_N);
+        cell_size = (max - min) / N;
     }
 
     void resize(T _min, T _max)
