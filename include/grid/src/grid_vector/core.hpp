@@ -30,6 +30,9 @@ protected:
     std::array<DynamicRange<measure_type>, rank> ranges;
 
 public:
+    using base_type::measure_t;
+    using base_type::value_t;
+
     GridVectorImpl(range_types... ranges)
         : ranges{{ranges...}}, base_type(static_cast<std::size_t>(ranges)...) {}
 
