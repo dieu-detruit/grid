@@ -38,6 +38,7 @@ class product_iterator
 
 public:
     using value_type = value_type_tuple;
+    using reference = itr_tuple&;
 
     product_iterator(
         std::remove_reference_t<itr_types>... itrs,
@@ -208,6 +209,9 @@ namespace std
 template <class... itr_types>
 struct iterator_traits<Grid::product_iterator<itr_types...>> {
     using value_type = typename Grid::product_iterator<itr_types...>::value_type;
+    using reference = typename Grid::product_iterator<itr_types...>::value_type;
+    //using reference = typename Grid::product_iterator<itr_types...>::reference;
+    using iterator_category = std::bidirectional_iterator_tag;
 };
 
 }  // namespace std

@@ -5,7 +5,6 @@
 #include <iterator>
 
 #include <grid/core.hpp>
-#include <grid/parallel.hpp>
 #include <strings.h>
 #include <vector>
 
@@ -18,11 +17,7 @@ template <typename value_type, typename measure_type, std::size_t N>
 void fftshift(Grid::GridArray<value_type, measure_type, N>& vec)
 {
     constexpr std::size_t left_size = (N % 2 == 0) ? N / 2 : N / 2 + 1;
-    if (to_parallelize) {
-        std::rotate(std::execution::par_unseq, vec.begin(), vec.begin() + left_size, vec.end());
-    } else {
-        std::rotate(vec.begin(), vec.begin() + left_size, vec.end());
-    }
+    std::rotate(std::execution::par_unseq, vec.begin(), vec.begin() + left_size, vec.end());
 }
 
 template <class grid_vector, std::enable_if_t<Impl::is_grid_vector_v<grid_vector> and Impl::get_rank_v<grid_vector> == 1, std::nullptr_t> = nullptr>
@@ -30,11 +25,7 @@ void fftshift(grid_vector& vec)
 {
     std::size_t N = vec.range(0).N;
     std::size_t left_size = (N % 2 == 0) ? N / 2 : N / 2 + 1;
-    if (to_parallelize) {
-        std::rotate(std::execution::par_unseq, vec.begin(), vec.begin() + left_size, vec.end());
-    } else {
-        std::rotate(vec.begin(), vec.begin() + left_size, vec.end());
-    }
+    std::rotate(std::execution::par_unseq, vec.begin(), vec.begin() + left_size, vec.end());
 }
 
 // 2D fftshift
@@ -77,11 +68,7 @@ inline void fftshift_impl(Iterator begin, Iterator end,
                 std::iter_swap(it, it + first_quadrant_offset);
             }
         };
-        if (to_parallelize) {
-            std::for_each(std::execution::par_unseq, offset_list.begin(), offset_list.end(), process);
-        } else {
-            std::for_each(std::execution::seq, offset_list.begin(), offset_list.end(), process);
-        }
+        std::for_each(std::execution::par_unseq, offset_list.begin(), offset_list.end(), process);
     } else {
         // else
         // Recursive Juggling Algorithm
@@ -116,20 +103,11 @@ inline void fftshift_impl(Iterator begin, Iterator end,
                 line += mod_offset;
             }
         };
-        if (to_parallelize) {
-            std::for_each(std::execution::par_unseq, lines_to_juggle.begin(), lines_to_juggle.end(), process);
-            auto line_head = begin;
-            for (index_t n = 0; n < N; ++n) {
-                std::rotate(std::execution::par_unseq, line_head, line_head + C, line_head + M);
-                line_head += M;
-            }
-        } else {
-            std::for_each(std::execution::seq, lines_to_juggle.begin(), lines_to_juggle.end(), process);
-            auto line_head = begin;
-            for (index_t n = 0; n < N; ++n) {
-                std::rotate(std::execution::seq, line_head, line_head + C, line_head + M);
-                line_head += M;
-            }
+        std::for_each(std::execution::par_unseq, lines_to_juggle.begin(), lines_to_juggle.end(), process);
+        auto line_head = begin;
+        for (index_t n = 0; n < N; ++n) {
+            std::rotate(std::execution::par_unseq, line_head, line_head + C, line_head + M);
+            line_head += M;
         }
     }
 }

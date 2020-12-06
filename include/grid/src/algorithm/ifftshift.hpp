@@ -6,7 +6,6 @@
 #include <vector>
 
 #include <grid/core.hpp>
-#include <grid/parallel.hpp>
 #include <grid/src/algorithm/fftshift.hpp>
 
 namespace Grid
@@ -18,11 +17,7 @@ template <typename value_type, typename measure_type, std::size_t N>
 void ifftshift(Grid::GridArray<value_type, measure_type, N>& vec)
 {
     constexpr std::size_t left_size = N / 2;
-    if (to_parallelize) {
-        std::rotate(std::execution::par_unseq, vec.begin(), vec.begin() + left_size, vec.end());
-    } else {
-        std::rotate(vec.begin(), vec.begin() + left_size, vec.end());
-    }
+    std::rotate(std::execution::par_unseq, vec.begin(), vec.begin() + left_size, vec.end());
 }
 
 template <class grid_vector, std::enable_if_t<Impl::is_grid_vector_v<grid_vector> and Impl::get_rank_v<grid_vector> == 1, std::nullptr_t> = nullptr>
@@ -30,11 +25,7 @@ void ifftshift(grid_vector& vec)
 {
     std::size_t N = vec.range(0).N;
     std::size_t left_size = N / 2;
-    if (to_parallelize) {
-        std::rotate(std::execution::par_unseq, vec.begin(), vec.begin() + left_size, vec.end());
-    } else {
-        std::rotate(vec.begin(), vec.begin() + left_size, vec.end());
-    }
+    std::rotate(std::execution::par_unseq, vec.begin(), vec.begin() + left_size, vec.end());
 }
 
 // 2D ifftshift
@@ -87,20 +78,11 @@ inline void ifftshift_impl(Iterator begin, Iterator end,
                 line += mod_offset;
             }
         };
-        if (to_parallelize) {
-            std::for_each(std::execution::par_unseq, lines_to_juggle.begin(), lines_to_juggle.end(), process);
-            auto line_head = begin;
-            for (index_t n = 0; n < N; ++n) {
-                std::rotate(std::execution::par_unseq, line_head, line_head + C, line_head + M);
-                line_head += M;
-            }
-        } else {
-            std::for_each(std::execution::seq, lines_to_juggle.begin(), lines_to_juggle.end(), process);
-            auto line_head = begin;
-            for (index_t n = 0; n < N; ++n) {
-                std::rotate(std::execution::seq, line_head, line_head + C, line_head + M);
-                line_head += M;
-            }
+        std::for_each(std::execution::par_unseq, lines_to_juggle.begin(), lines_to_juggle.end(), process);
+        auto line_head = begin;
+        for (index_t n = 0; n < N; ++n) {
+            std::rotate(std::execution::par_unseq, line_head, line_head + C, line_head + M);
+            line_head += M;
         }
     }
 }
