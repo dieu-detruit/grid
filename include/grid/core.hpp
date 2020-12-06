@@ -1,7 +1,5 @@
 #pragma once
 
-#include <grid/parallel.hpp>
-
 #include <grid/src/grid_array/core.hpp>
 #include <grid/src/grid_vector/core.hpp>
 
