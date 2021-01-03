@@ -25,7 +25,8 @@ public:
 
     // iterator diverted from STL container
     using iterator = decltype(std::begin(_data));
-    using const_iterator = decltype(std::begin(_data));
+    using const_iterator = decltype(std::cbegin(_data));
+
 
     iterator begin()
     {
@@ -53,7 +54,7 @@ public:
     {
         return _data.data();
     }
-    std::size_t size()
+    std::size_t size() const
     {
         return _data.size();
     }
