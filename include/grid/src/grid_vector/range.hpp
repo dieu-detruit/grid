@@ -62,7 +62,7 @@ struct DynamicRange {
         recalc();
     }
 
-    auto line()
+    auto line() const
     {
         auto cell_size_half = cell_size / 2;
         return Grid::arange(min + cell_size_half,
@@ -70,7 +70,7 @@ struct DynamicRange {
             cell_size, true);
     }
 
-    T length()
+    T length() const
     {
         return max - min;
     }

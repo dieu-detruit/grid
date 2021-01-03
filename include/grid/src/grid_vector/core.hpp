@@ -60,11 +60,11 @@ public:
     {
         return ranges.at(n);
     }
-    auto line(std::size_t n)
+    auto line(std::size_t n) const
     {
         return ranges.at(n).line();
     }
-    auto lines()
+    auto lines() const
     {
         return lines_impl(std::make_index_sequence<rank>{});
     }
@@ -88,15 +88,30 @@ public:
         }
     }
 
+    template <class... types>
+    const value_type& at(types... subscript) const
+    {
+        static_assert(rank == sizeof...(subscript), "The number of argument is invalid.");
+        static_assert(std::conjunction<std::is_convertible<types, measure_type>...>::value, "The arguments must be convertible to the measure type.");
+
+        return at_impl(std::make_index_sequence<rank>{}, subscript...);
+    }
+
+
 protected:
     template <std::size_t... I, class... types>
     inline value_type& at_impl(std::index_sequence<I...>, types... subscript)
     {
         return this->_data.at(std::get<I>(ranges).quantize(subscript)...);
     }
+    template <std::size_t... I, class... types>
+    inline const value_type& at_impl(std::index_sequence<I...>, types... subscript) const
+    {
+        return this->_data.at(std::get<I>(ranges).quantize(subscript)...);
+    }
 
     template <std::size_t... I>
-    inline auto lines_impl(std::index_sequence<I...>)
+    inline auto lines_impl(std::index_sequence<I...>) const
     {
         return Grid::prod(ranges[I].line()...);
     }

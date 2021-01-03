@@ -69,6 +69,12 @@ public:
         static_assert(sizeof...(subscript) == rank, "The number of argument must match the dimension rank");
         return this->_data.at(vector_index<rank>::index(sizes, subscript...));
     }
+    template <std::unsigned_integral... U>
+    inline const T& at(U... subscript) const
+    {
+        static_assert(sizeof...(subscript) == rank, "The number of argument must match the dimension rank");
+        return this->_data.at(vector_index<rank>::index(sizes, subscript...));
+    }
 
     inline decltype(auto) operator[](std::size_t subscript)
     {
