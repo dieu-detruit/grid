@@ -38,6 +38,10 @@ public:
     {
         return _data.data();
     }
+    const value_type* data() const
+    {
+        return _data.data();
+    }
     std::size_t size() const
     {
         return _data.size();
